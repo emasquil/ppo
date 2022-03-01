@@ -2,6 +2,7 @@ import gym
 import dm_env
 from dm_env import specs
 import numpy as np
+import acme
 
 
 class PendulumEnv(dm_env.Environment):
@@ -27,7 +28,7 @@ class PendulumEnv(dm_env.Environment):
             action (np array): shape=(1,) and dtype=np.float32
 
         Returns:
-            dm_env.TimeStep
+            dm_env.TimeStep: 
         """
         observation, reward, done, _ = self._env.step(action)
         if done:
@@ -50,7 +51,7 @@ class PendulumEnv(dm_env.Environment):
     def action_spec(self) -> specs.BoundedArray: 
         """Returns the type of array used to represent actions
 
-        For the Pendulum-v1 ennvironmet, the action is a single value representing the torque
+        For the Pendulum-v1 environmet, the action is a single value representing the torque
         applied to the pendulum. It's bounded between (-2, 2)
 
         Returns:
@@ -63,9 +64,8 @@ class PendulumEnv(dm_env.Environment):
 
 
 if __name__ == '__main__':
-    
-    env = gym.make('Pendulum-v1')
-    obs = env.reset()
+    env = PendulumEnv()
 
-    print()
+    # single object containing all the information about our env
+    env_specs = acme.make_environment_spec(env)  
 
