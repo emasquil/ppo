@@ -1,8 +1,10 @@
+import imp
 import gym
 import dm_env
 from dm_env import specs
 import numpy as np
 import acme
+import chex
 
 
 class PendulumEnv(dm_env.Environment):
@@ -59,6 +61,9 @@ class PendulumEnv(dm_env.Environment):
         """
         return specs.BoundedArray(shape=(1,), dtype=np.float32, minimum=-2.0, maximum=2.0)
 
+    def render(self):
+        self._env.render()
+
     def close(self):
         self._env.close()
 
@@ -67,5 +72,16 @@ if __name__ == '__main__':
     env = PendulumEnv()
 
     # single object containing all the information about our env
-    env_specs = acme.make_environment_spec(env)  
+    env_specs = acme.make_environment_spec(env)
 
+    # simple interaction loop
+    max_steps = 300
+    observation = env.reset()
+    for t in range(max_steps):
+        env.render()
+        action = np.random.uniform(-2.0, 2.0, size=(1,))
+        time_step = env.step(action)
+        if time_step.last():
+            break
+
+    env.close()
