@@ -1,10 +1,8 @@
-import imp
 import gym
 import dm_env
 from dm_env import specs
 import numpy as np
 import acme
-import chex
 
 
 class PendulumEnv(dm_env.Environment):
