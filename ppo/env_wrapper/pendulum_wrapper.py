@@ -57,7 +57,7 @@ class PendulumEnv(dm_env.Environment):
         Returns:
             specs.BoundedArray
         """
-        return specs.BoundedArray(shape=(1,), dtype=np.float32, minimum=[-2.0], maximum=2.0)
+        return specs.BoundedArray(shape=(1,), dtype=np.float32, minimum=-2.0, maximum=2.0)
 
     def render(self):
         self._env.render()
