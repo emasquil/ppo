@@ -39,8 +39,8 @@ class PendulumEnv(dm_env.Environment):
         """Returns the type of array used to represent observations.
 
         For the Pendulum-v1 environment, the observations consists of 3 values:
-            - x position
-            - y position
+            - x position: bounded in (-1, 1) 
+            - y position: bounded in (-1, 1) 
             - angular velocity: bounded in (-8, 8) 
 
         Returns:
