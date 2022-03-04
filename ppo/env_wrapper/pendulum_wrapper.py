@@ -46,7 +46,7 @@ class PendulumEnv(dm_env.Environment):
         Returns:
             specs.BoundedArray
         """
-        return specs.BoundedArray(shape=(3,), dtype=np.float32, minimum=-8.0, maximum=8.0)
+        return specs.BoundedArray(shape=(3,), dtype=np.float32, minimum=[-1.0, -1.0, -8.0], maximum=[1.0, 1.0, 8.0])
 
     def action_spec(self) -> specs.BoundedArray: 
         """Returns the type of array used to represent actions
@@ -57,7 +57,7 @@ class PendulumEnv(dm_env.Environment):
         Returns:
             specs.BoundedArray
         """
-        return specs.BoundedArray(shape=(1,), dtype=np.float32, minimum=-2.0, maximum=2.0)
+        return specs.BoundedArray(shape=(1,), dtype=np.float32, minimum=[-2.0], maximum=2.0)
 
     def render(self):
         self._env.render()
