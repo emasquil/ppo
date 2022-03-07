@@ -30,72 +30,78 @@ import numpy as np
 import sonnet as snt
 
 TASKS = {
-    'debug': ['MountainCarContinuous-v0'],
-    'default': [
-        'HalfCheetah-v2', 'Hopper-v2', 'InvertedDoublePendulum-v2',
-        'InvertedPendulum-v2', 'Reacher-v2', 'Swimmer-v2', 'Walker2d-v2'
+    "debug": ["MountainCarContinuous-v0"],
+    "default": [
+        "HalfCheetah-v2",
+        "Hopper-v2",
+        "InvertedDoublePendulum-v2",
+        "InvertedPendulum-v2",
+        "Reacher-v2",
+        "Swimmer-v2",
+        "Walker2d-v2",
     ],
 }
 
 
-def make_environment(
-    task: str = 'MountainCarContinuous-v0') -> dm_env.Environment:
-  """Creates an OpenAI Gym environment."""
+def make_environment(task: str = "MountainCarContinuous-v0") -> dm_env.Environment:
+    """Creates an OpenAI Gym environment."""
 
-  # Load the gym environment.
-  environment = gym.make(task)
+    # Load the gym environment.
+    environment = gym.make(task)
 
-  # Make sure the environment obeys the dm_env.Environment interface.
-  environment = wrappers.GymWrapper(environment)
-  # Clip the action returned by the agent to the environment spec.
-  environment = wrappers.CanonicalSpecWrapper(environment, clip=True)
-  environment = wrappers.SinglePrecisionWrapper(environment)
+    # Make sure the environment obeys the dm_env.Environment interface.
+    environment = wrappers.GymWrapper(environment)
+    # Clip the action returned by the agent to the environment spec.
+    environment = wrappers.CanonicalSpecWrapper(environment, clip=True)
+    environment = wrappers.SinglePrecisionWrapper(environment)
 
-  return environment
+    return environment
 
 
 def make_networks(
     action_spec: specs.BoundedArray,
     policy_layer_sizes: Sequence[int] = (256, 256, 256),
     critic_layer_sizes: Sequence[int] = (512, 512, 256),
-    vmin: float = -150.,
-    vmax: float = 150.,
+    vmin: float = -150.0,
+    vmax: float = 150.0,
     num_atoms: int = 51,
 ) -> Mapping[str, types.TensorTransformation]:
-  """Creates networks used by the agent."""
+    """Creates networks used by the agent."""
 
-  # Get total number of action dimensions from action spec.
-  num_dimensions = np.prod(action_spec.shape, dtype=int)
+    # Get total number of action dimensions from action spec.
+    num_dimensions = np.prod(action_spec.shape, dtype=int)
 
-  # Create the shared observation network; here simply a state-less operation.
-  observation_network = tf2_utils.batch_concat
+    # Create the shared observation network; here simply a state-less operation.
+    observation_network = tf2_utils.batch_concat
 
-  # Create the policy network.
-  policy_network = snt.Sequential([
-      networks.LayerNormMLP(policy_layer_sizes, activate_final=True),
-      networks.NearZeroInitializedLinear(num_dimensions),
-      networks.TanhToSpec(action_spec),
-  ])
+    # Create the policy network.
+    policy_network = snt.Sequential(
+        [
+            networks.LayerNormMLP(policy_layer_sizes, activate_final=True),
+            networks.NearZeroInitializedLinear(num_dimensions),
+            networks.TanhToSpec(action_spec),
+        ]
+    )
 
-  # Create the critic network.
-  critic_network = snt.Sequential([
-      # The multiplexer concatenates the observations/actions.
-      networks.CriticMultiplexer(),
-      networks.LayerNormMLP(critic_layer_sizes, activate_final=True),
-      networks.DiscreteValuedHead(vmin, vmax, num_atoms),
-  ])
+    # Create the critic network.
+    critic_network = snt.Sequential(
+        [
+            # The multiplexer concatenates the observations/actions.
+            networks.CriticMultiplexer(),
+            networks.LayerNormMLP(critic_layer_sizes, activate_final=True),
+            networks.DiscreteValuedHead(vmin, vmax, num_atoms),
+        ]
+    )
 
-  return {
-      'policy': policy_network,
-      'critic': critic_network,
-      'observation': observation_network,
-  }
+    return {
+        "policy": policy_network,
+        "critic": critic_network,
+        "observation": observation_network,
+    }
 
 
-def make_demonstration_iterator(batch_size: int,
-                                dataset_name: str,
-                                seed: int = 0):
-  dataset = tfds.get_tfds_dataset(dataset_name)
-  return tfds.JaxInMemoryRandomSampleIterator(dataset, jax.random.PRNGKey(seed),
-                                              batch_size)
-
+def make_demonstration_iterator(batch_size: int, dataset_name: str, seed: int = 0):
+    dataset = tfds.get_tfds_dataset(dataset_name)
+    return tfds.JaxInMemoryRandomSampleIterator(
+        dataset, jax.random.PRNGKey(seed), batch_size
+    )
