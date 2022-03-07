@@ -32,7 +32,7 @@ class PendulumEnv(dm_env.Environment):
         """
         observation, reward, done, _ = self._env.step(action)
         if done:
-            dm_env.termination(reward, observation)
+            return dm_env.termination(reward, observation)
         return dm_env.transition(reward, observation)
 
     def observation_spec(self) -> specs.BoundedArray:
