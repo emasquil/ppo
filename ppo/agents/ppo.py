@@ -11,63 +11,58 @@ import rlax
 import chex
 from acme import specs
 import optax
+from typing import Tuple
 
 
 class OnlinePPO(Actor):
     def __init__(
         self,
         environment_spec: specs.EnvironmentSpec,
-        network,
+        policy_network,
+        value_network,
         rng: chex.PRNGKey,
-        epsilon: float=0.0,
-        learning_rate: float=1e-3,
-        discount: float=0.99,
+        epsilon: float = 0.0,
+        learning_rate: float = 1e-3,
+        discount: float = 0.99,
     ):
-        self.network = hk.without_apply_rng(hk.transform(network))
-        self.network_params = self.network.init(rng=rng, inputs=jnp.zeros(environment_spec.observations.shape))
-        
-        self.optimizer = optax.adam(learning_rate)
-        self.optimizer_state = self.optimizer.init(self.network_params)
-        
-        def greedy_policy(network_params, rng, observation):
-            action_values = self.network.apply(network_params, observation)
+        policy_rng, value_rng = jax.split(rng, 2)
+        self.policy_network = hk.without_apply_rng(hk.transform(policy_network))
+        self.policy_params = self.policy_network.init(
+            rng=policy_rng, inputs=jnp.zeros(environment_spec.observations.shape)
+        )
+        self.value_network = hk.without_apply_rng(hk.transform(value_network))
+        self.value_params = self.policy_network.init(
+            rng=value_rng, inputs=jnp.zeros(environment_spec.observations.shape)
+        )
 
-            return rlax.epsilon_greedy(epsilon).sample(rng, action_values)
+        self.policy_optimizer = optax.adam(learning_rate)
+        self.policy_optimizer_state = self.policy_optimizer.init(self.policy_params)
+        self.value_optimizer = optax.adam(learning_rate)
+        self.value_optimizer_state = self.value_optimizer.init(self.value_params)
+
+        def greedy_policy(policy_params, rng, observation):
+            mu, sigma = self.policy_network.apply(policy_params, observation)
+
+            return rlax.gaussian_diagonal().sample(rng, mu, sigma)
 
         self.greedy_policy = greedy_policy
         self.greedy_rng = hk.PRNGSequence(1)
+
+        def policy(policy_params, observation):
+            return self.policy_network.apply(policy_params, observation)[0]
+
+        self.policy = policy
 
         self.timestep = None
         self.action = None
         self.next_timestep = None
         self.discount = discount
 
-        # # Create a learner that updates the parameters (and initializes them).
-        # self._learner = DQNLearner(
-        #     network=network,
-        #     obs_spec=environment_spec.observations,
-        #     rng=hk.PRNGSequence(1),
-        #     optimizer=optax.adam(learning_rate),
-        #     discount=discount,
-        # )
-
-        # # We'll ignore the first min_observations when determining whether to take
-        # # a step and we'll do so by making sure num_observations >= 0.
-        # self._num_observations = -max(batch_size, min_replay_size)
-
-        # observations_per_step = float(batch_size) / samples_per_insert
-        # if observations_per_step >= 1.0:
-        #     self._observations_per_update = int(observations_per_step)
-        #     self._learning_steps_per_update = 1
-        # else:
-        #     self._observations_per_update = 1
-        #     self._learning_steps_per_update = int(1.0 / observations_per_step)
-
     def select_action(self, observation: np.ndarray) -> np.ndarray:
         # Convert to get a batch shape
         observation = tree_util.tree_map(lambda x: jnp.expand_dims(x, axis=0), observation)
 
-        action = self.greedy_policy(self.network_params, next(self.greedy_rng), observation)
+        action = self.greedy_policy(self.policy_params, next(self.greedy_rng), observation)
 
         # Convert back to single action
         action = tree_util.tree_map(lambda x: jnp.array(x).squeeze(axis=0), action)
@@ -76,7 +71,7 @@ class OnlinePPO(Actor):
 
     def observe_first(self, timestep: dm_env.TimeStep) -> None:
         self.timestep = timestep
-        self.action = None 
+        self.action = None
         self.next_timestep = None
 
     def observe(self, action: np.ndarray, next_timestep: dm_env.TimeStep) -> None:
@@ -89,37 +84,45 @@ class OnlinePPO(Actor):
             self.timestep = self.next_timestep
             self.next_timestep = next_timestep
 
-    def loss(self, network_params: hk.Params, timestep: dm_env.TimeStep, action: np.ndarray, next_timestep: dm_env.TimeStep) -> chex.Array:
-        q_next_state = self.network.apply(network_params, next_timestep.observation)
-        q_next_state = jax.lax.stop_gradient(q_next_state)
+    def value_loss(
+        self, value_params: hk.Params, timestep: dm_env.TimeStep, next_timestep: dm_env.TimeStep
+    ) -> Tuple[chex.Array, chex.Array]:
+        v_next_state = self.value_network.apply(value_params, next_timestep.observation)
+        v_next_state = jax.lax.stop_gradient(v_next_state)
 
-        # compute the target y_t
-        y_t = timestep.reward + self.discount * jnp.max(q_next_state, axis=-1)
+        v_state = self.policy_network.apply(value_params, timestep.observation)
 
-        ### Compute the estimate qa_tm1
-        # Estimate q_tm1 with the online network
-        q_tm1 = self.network.apply(params, o_tm1) 
+        advantage = next_timestep.reward + self.discount * v_next_state - v_state
 
-        # Perform batch indexing to obtain q_tm1(ob_tm1, a_tm1)
-        qa_tm1 = jax.vmap(lambda q, a: q[a])(q_tm1, a_tm1)
+        return jnp.mean(jnp.square(advantage)), advantage
 
-        ### Compute the final loss
-        # Compute the final loss
-        td_error = y_t - qa_tm1
+    def policy_loss(
+        self, policy_params: hk.Params, timestep: dm_env.TimeStep, action: np.ndarray, advantage: chex.Array
+    ) -> chex.Array:
+        mu, sigma = self.policy_network.apply(policy_params, timestep.observation)
+        action_log_probs = rlax.gaussian_diagonal().logprob(action, mu, sigma)
 
-        # Compute the L2 error in expectation
-        q_loss = 0.5 * jnp.square(td_error)
-        q_loss = jnp.mean(q_loss)
+        return -jnp.mean(action_log_probs * advantage)
 
-        return q_loss
-        
     def update(self) -> None:
         assert self.timestep is None, "Please let the agent observe a first timestep."
         assert self.action is None or self.next_timestep is None, "Please let the agent observe a timestep."
 
-        gradients = jax.grad(self.loss)(self.network_params, self.timestep, self.action, self.next_timestep)
-    
-        updates, self.optimizer_state = self.optimizer.update(gradients, self.optimizer_state)
-        self.network_params = optax.apply_updates(self.network_params, updates)
+        # Update value network
+        (_, advantage), value_gradients = jax.value_and_grad(self.value_loss, has_aux=True)(
+            self.value_params, self.timestep, self.next_timestep
+        )
+        advantage = jax.lax.stop_gradient(advantage)
 
-        ## Update twice if last step
+        value_updates, self.value_optimizer_state = self.value_optimizer.update(
+            value_gradients, self.value_optimizer_state
+        )
+        self.value_params = optax.apply_updates(self.value_params, value_updates)
+
+        # Update policy network
+        policy_gradients = jax.grad(self.policy_loss)(self.policy_params, self.timestep, self.action, advantage)
+
+        policy_updates, self.policy_optimizer_state = self.policy_optimizer.update(
+            policy_gradients, self.policy_optimizer_state
+        )
+        self.policy_params = optax.apply_updates(self.policy_params, policy_updates)
