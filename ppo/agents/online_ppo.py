@@ -1,4 +1,3 @@
-from time import time
 import numpy as np
 
 import dm_env
@@ -21,7 +20,6 @@ class OnlinePPO(Actor):
         policy_network,
         value_network,
         rng: chex.PRNGKey,
-        epsilon: float = 0.0,
         learning_rate: float = 1e-3,
         discount: float = 0.99,
     ):
