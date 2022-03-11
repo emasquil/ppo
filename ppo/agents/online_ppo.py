@@ -68,12 +68,20 @@ class OnlinePPO(Actor):
         return action
 
     def observe_first(self, timestep: dm_env.TimeStep) -> None:
+        # Convert to get a batch shape
+        observation = tree_util.tree_map(lambda x: jnp.expand_dims(x, axis=0), timestep.observation)
+        timestep = dm_env.TimeStep(step_type=timestep.step_type, reward=timestep.reward, observation=observation, discount=timestep.discount)
+
         self.timestep = timestep
         self.action = None
         self.next_timestep = None
 
     def observe(self, action: np.ndarray, next_timestep: dm_env.TimeStep) -> None:
-        assert self.timestep is None, "Please let the agent observe a first timestep."
+        assert self.timestep is not None, "Please let the agent observe a first timestep."
+        # Convert to get a batch shape
+        observation = tree_util.tree_map(lambda x: jnp.expand_dims(x, axis=0), next_timestep.observation)
+        next_timestep = dm_env.TimeStep(step_type=next_timestep.step_type, reward=next_timestep.reward, observation=observation, discount=next_timestep.discount)
+
         self.action = action
 
         if self.timestep.first():
@@ -103,8 +111,8 @@ class OnlinePPO(Actor):
         return -jnp.mean(action_log_probs * advantage)
 
     def update(self) -> None:
-        assert self.timestep is None, "Please let the agent observe a first timestep."
-        assert self.action is None or self.next_timestep is None, "Please let the agent observe a timestep."
+        assert self.timestep is not None, "Please let the agent observe a first timestep."
+        assert self.action is not None and self.next_timestep is not None, "Please let the agent observe a timestep."
 
         # Update value network
         (_, advantage), value_gradients = jax.value_and_grad(self.value_loss, has_aux=True)(
