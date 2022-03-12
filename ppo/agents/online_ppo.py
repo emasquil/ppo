@@ -29,7 +29,7 @@ class OnlinePPO(Actor):
             rng=policy_key, observations=jnp.zeros(observation_spec.shape)
         )
         self.value_network = hk.without_apply_rng(hk.transform(value_network))
-        self.value_params = self.policy_network.init(
+        self.value_params = self.value_network.init(
             rng=value_key, observations=jnp.zeros(observation_spec.shape)
         )
 
@@ -72,6 +72,7 @@ class OnlinePPO(Actor):
         observation = tree_util.tree_map(lambda x: jnp.expand_dims(x, axis=0), timestep.observation)
         timestep = dm_env.TimeStep(step_type=timestep.step_type, reward=timestep.reward, observation=observation, discount=timestep.discount)
 
+
         self.timestep = timestep
         self.action = None
         self.next_timestep = None
@@ -96,7 +97,7 @@ class OnlinePPO(Actor):
         v_next_state = self.value_network.apply(value_params, next_timestep.observation)
         v_next_state = jax.lax.stop_gradient(v_next_state)
 
-        v_state = self.policy_network.apply(value_params, timestep.observation)
+        v_state = self.value_network.apply(value_params, timestep.observation)
 
         advantage = next_timestep.reward + self.discount * v_next_state - v_state
 
@@ -115,6 +116,7 @@ class OnlinePPO(Actor):
         assert self.action is not None and self.next_timestep is not None, "Please let the agent observe a timestep."
 
         # Update value network
+        self.value_network.apply(self.value_params, self.next_timestep.observation)
         (_, advantage), value_gradients = jax.value_and_grad(self.value_loss, has_aux=True)(
             self.value_params, self.timestep, self.next_timestep
         )
