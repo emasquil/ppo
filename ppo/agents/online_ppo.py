@@ -116,7 +116,6 @@ class OnlinePPO(Actor):
         assert self.action is not None and self.next_timestep is not None, "Please let the agent observe a timestep."
 
         # Update value network
-        self.value_network.apply(self.value_params, self.next_timestep.observation)
         (_, advantage), value_gradients = jax.value_and_grad(self.value_loss, has_aux=True)(
             self.value_params, self.timestep, self.next_timestep
         )
