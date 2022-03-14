@@ -21,6 +21,12 @@ If you are planning on developing the package you will need to add `[dev]` at th
 pip install -e .[dev]
 ```
 
+If you want to run the [demo](ppo.ipynb) you might need to install the following.
+
+```
+sudo apt-get install -y xvfb ffmpeg freeglut3-dev
+```
+
 
 ## Contributing
 Before any pull request, please make sure to format your code using the following:
