@@ -8,10 +8,10 @@ import acme
 class PendulumEnv(dm_env.Environment):
     def __init__(self) -> None:
         super().__init__()
-        self._env = gym.make('Pendulum-v1')
+        self._env = gym.make("Pendulum-v1")
 
     def reset(self) -> dm_env.TimeStep:
-        """ Resets the environment and returns an initial observation.
+        """Resets the environment and returns an initial observation.
 
         Note that there's no reward for this first observation
 
@@ -28,7 +28,7 @@ class PendulumEnv(dm_env.Environment):
             action (np array): shape=(1,) and dtype=np.float32
 
         Returns:
-            dm_env.TimeStep: 
+            dm_env.TimeStep:
         """
         observation, reward, done, _ = self._env.step(action)
         if done:
@@ -39,16 +39,21 @@ class PendulumEnv(dm_env.Environment):
         """Returns the type of array used to represent observations.
 
         For the Pendulum-v1 environment, the observations consists of 3 values:
-            - x position: bounded in (-1, 1) 
-            - y position: bounded in (-1, 1) 
-            - angular velocity: bounded in (-8, 8) 
+            - x position: bounded in (-1, 1)
+            - y position: bounded in (-1, 1)
+            - angular velocity: bounded in (-8, 8)
 
         Returns:
             specs.BoundedArray
         """
-        return specs.BoundedArray(shape=(3,), dtype=np.float32, minimum=[-1.0, -1.0, -8.0], maximum=[1.0, 1.0, 8.0])
+        return specs.BoundedArray(
+            shape=(3,),
+            dtype=np.float32,
+            minimum=[-1.0, -1.0, -8.0],
+            maximum=[1.0, 1.0, 8.0],
+        )
 
-    def action_spec(self) -> specs.BoundedArray: 
+    def action_spec(self) -> specs.BoundedArray:
         """Returns the type of array used to represent actions
 
         For the Pendulum-v1 environmet, the action is a single value representing the torque
@@ -57,7 +62,9 @@ class PendulumEnv(dm_env.Environment):
         Returns:
             specs.BoundedArray
         """
-        return specs.BoundedArray(shape=(1,), dtype=np.float32, minimum=-2.0, maximum=2.0)
+        return specs.BoundedArray(
+            shape=(1,), dtype=np.float32, minimum=-2.0, maximum=2.0
+        )
 
     def render(self):
         self._env.render()
@@ -66,7 +73,7 @@ class PendulumEnv(dm_env.Environment):
         self._env.close()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     env = PendulumEnv()
 
     # single object containing all the information about our env
