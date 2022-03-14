@@ -25,6 +25,9 @@ class OnlinePPO(BaseAgent):
         discount: float = 0.99,
     ):
         super(OnlinePPO, self).__init__(observation_spec, policy_network, value_network, key, learning_rate, discount)
+        self.timestep = None
+        self.action = None
+        self.next_timestep = None
 
     def observe_first(self, timestep: dm_env.TimeStep) -> None:
         # Convert to get a batch shape

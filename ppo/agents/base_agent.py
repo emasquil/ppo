@@ -51,9 +51,6 @@ class BaseAgent(Actor):
 
         self.policy = policy
 
-        self.timestep = None
-        self.action = None
-        self.next_timestep = None
         self.discount = discount
 
     def select_action(self, observation: np.ndarray) -> np.ndarray:
