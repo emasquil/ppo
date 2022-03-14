@@ -11,10 +11,6 @@ class FixedReplayBuffer(BaseReplayBuffer):
     """Fixed-size buffer to store transition tuples."""
 
     def __init__(self, buffer_capacity: int) -> None:
-        """Initialize a ReplayBuffer object.
-        Args:
-            batch_size (int): size of each training batch
-        """
         super(FixedReplayBuffer, self).__init__(buffer_capacity)
         self.timestep = None
         self.action = None

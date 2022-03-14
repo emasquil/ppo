@@ -31,3 +31,6 @@ class VanillaPPO(BaseAgent):
 
     def observe(self, value: float, log_probability: float, action: np.ndarray, next_timestep: dm_env.TimeStep) -> None:
         self.replay_buffer.add(value, log_probability, action, next_timestep)
+
+    def update(self):
+        pass

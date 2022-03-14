@@ -10,10 +10,6 @@ class BaseReplayBuffer:
     """Fixed-size base buffer to store transition tuples."""
 
     def __init__(self, buffer_capacity: int) -> None:
-        """Initialize a ReplayBuffer object.
-        Args:
-            batch_size (int): size of each training batch
-        """
         self._memory = list()
         self._maxlen = buffer_capacity
 
@@ -32,10 +28,10 @@ class BaseReplayBuffer:
         assert n_samples > 0, "replay buffer is unfilled"
         all_transitions = [self.sample_a_transition() for _ in range(n_samples)] 
 
-        stacked_transitions = []
+        stacked_transitions = {}
         for attribute in all_transitions[0]:
           arrays = [transition[attribute] for transition in all_transitions]
           arrays = jnp.stack(arrays, axis=0)
-          stacked_transitions.append(arrays)
+          stacked_transitions[attribute] = arrays
 
-        return Transition(*stacked_transitions)
+        return Transition(**stacked_transitions)
