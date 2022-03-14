@@ -66,8 +66,8 @@ class PendulumEnv(dm_env.Environment):
             shape=(1,), dtype=np.float32, minimum=-2.0, maximum=2.0
         )
 
-    def render(self):
-        self._env.render()
+    def render(self, mode):
+        return self._env.render(mode)
 
     def close(self):
         self._env.close()
