@@ -1,12 +1,15 @@
 import numpy as np
 
-import jax
+import jax.numpy as jnp
+import chex
+
+from ppo.replay_buffers.transition import Transition
 
 
 class BaseReplayBuffer:
     """Fixed-size base buffer to store transition tuples."""
 
-    def __init__(self, buffer_capacity: int):
+    def __init__(self, buffer_capacity: int) -> None:
         """Initialize a ReplayBuffer object.
         Args:
             batch_size (int): size of each training batch
@@ -14,7 +17,7 @@ class BaseReplayBuffer:
         self._memory = list()
         self._maxlen = buffer_capacity
 
-    def sample_a_transition(self):
+    def sample_a_transition(self) -> Transition:
         """Randomly sample a transition from memory."""
         assert len(self._memory) > 0, "replay buffer is unfilled"
 
@@ -23,16 +26,16 @@ class BaseReplayBuffer:
 
         return transition
 
-    def sample_full_buffer(self):
+    def sample_full_buffer(self) -> chex.Array:
         """Randomly sample a transition from memory."""
-        assert len(self._memory) > 0, "replay buffer is unfilled"
+        n_samples = len(self._memory)
+        assert n_samples > 0, "replay buffer is unfilled"
+        all_transitions = [self.sample_a_transition() for _ in range(n_samples)] 
 
-        transition_idxs = np.arange(0, len(self._memory))
-        np.random.shuffle(transition_idxs)
-        transitions = jax.tree_util.tree_map(
-            lambda transition_idx: self._memory.pop(transition_idx), transition_idxs
-        )
+        stacked_transitions = []
+        for attribute in all_transitions[0]:
+          arrays = [transition[attribute] for transition in all_transitions]
+          arrays = jnp.stack(arrays, axis=0)
+          stacked_transitions.append(arrays)
 
-        assert len(self._memory) == 0, "replay buffer has to be empty after sampling it"
-
-        return transitions
+        return Transition(*stacked_transitions)
