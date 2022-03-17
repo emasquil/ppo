@@ -25,12 +25,13 @@ class PendulumEnv(dm_env.Environment):
         """Returns a new TimeStep (reward, observation) according to the given action
 
         Args:
-            action (np array): shape=(1,) and dtype=np.float32
+            action: castable to np.array
 
         Returns:
             dm_env.TimeStep:
         """
-        observation, reward, done, _ = self._env.step(action)
+        # if action is not cast to numpy, we observe weird behaviour when taking steps
+        observation, reward, done, _ = self._env.step(np.array(action))
         if done:
             return dm_env.termination(reward, observation)
         return dm_env.transition(reward, observation)
