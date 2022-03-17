@@ -49,6 +49,7 @@ class FixedReplayBuffer(BaseReplayBuffer):
             reward_tp1=self.next_timestep.reward,
             observation_tp1=self.next_timestep.observation,
             done_tp1=self.next_timestep.last(),
+            advantage_t=None
         )
 
         # convert every data into jnp array
