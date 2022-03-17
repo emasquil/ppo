@@ -42,3 +42,7 @@ class BaseReplayBuffer:
           stacked_transitions[attribute] = arrays
 
         return Transition(**stacked_transitions)
+
+    def clear(self) -> None:
+        """Empty the entire buffer"""
+        self._memory = list()
