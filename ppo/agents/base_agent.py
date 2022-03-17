@@ -36,14 +36,14 @@ class BaseAgent(Actor):
         self.value_optimizer = optax.adam(learning_rate)
         self.value_optimizer_state = self.value_optimizer.init(self.value_params)
 
-        def greedy_policy(
+        def sampling_policy(
             policy_params: hk.Params, key: chex.PRNGKey, observation: np.ndarray
         ):
             mu, sigma = self.policy_network.apply(policy_params, observation)
 
             return rlax.gaussian_diagonal().sample(key, mu, sigma)
 
-        self.greedy_policy = greedy_policy
+        self.sampling_policy = sampling_policy
         self.greedy_keys = hk.PRNGSequence(1)
 
         def policy(policy_params: hk.Params, observation: np.ndarray):
@@ -59,7 +59,7 @@ class BaseAgent(Actor):
             lambda x: jnp.expand_dims(x, axis=0), observation
         )
 
-        action = self.greedy_policy(
+        action = self.sampling_policy(
             self.policy_params, next(self.greedy_keys), observation
         )
 
