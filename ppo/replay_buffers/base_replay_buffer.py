@@ -23,7 +23,7 @@ class BaseReplayBuffer:
         return transition
 
     def sample_full_buffer(self) -> chex.Array:
-        """Randomly sample a transition from memory."""
+        """Randomly sample the full buffer."""
         n_samples = len(self._memory)
         assert n_samples > 0, "replay buffer is unfilled"
         all_transitions = [self.sample_a_transition() for _ in range(n_samples)] 
