@@ -44,7 +44,7 @@ class BaseAgent(Actor):
             return rlax.gaussian_diagonal().sample(key, mu, sigma)
 
         self.sampling_policy = sampling_policy
-        self.greedy_keys = hk.PRNGSequence(1)
+        self.sampling_keys = hk.PRNGSequence(1)
 
         def policy(policy_params: hk.Params, observation: np.ndarray):
             return self.policy_network.apply(policy_params, observation)[0]
@@ -60,7 +60,7 @@ class BaseAgent(Actor):
         )
 
         action = self.sampling_policy(
-            self.policy_params, next(self.greedy_keys), observation
+            self.policy_params, next(self.sampling_keys), observation
         )
 
         # Convert back to single action
