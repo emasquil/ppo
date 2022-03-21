@@ -20,6 +20,7 @@ class BaseAgent(Actor):
         key: chex.PRNGKey,
         learning_rate: float = 1e-3,
         discount: float = 0.99,
+        eps: float = 0.2
     ):
         policy_key, value_key = jax.random.split(key, 2)
         self.policy_network = hk.without_apply_rng(hk.transform(policy_network))
@@ -52,6 +53,8 @@ class BaseAgent(Actor):
         self.policy = policy
 
         self.discount = discount
+
+        self.eps = eps
 
     def select_action(self, observation: np.ndarray) -> np.ndarray:
         # Convert to get a batch shape
