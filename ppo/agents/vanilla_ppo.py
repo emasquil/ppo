@@ -29,8 +29,8 @@ class VanillaPPO(BaseAgent):
     def observe_first(self, timestep: dm_env.TimeStep) -> None:
         self.replay_buffer.add_first(timestep)
 
-    def observe(self, value: float, log_probability: float, action: np.ndarray, next_timestep: dm_env.TimeStep) -> None:
-        self.replay_buffer.add(value, log_probability, action, next_timestep)
+    def observe(self, value: float, log_probability: float, action: np.ndarray, next_timestep: dm_env.TimeStep, advantage: float) -> None:
+        self.replay_buffer.add(value, log_probability, action, next_timestep, advantage)
 
     def update(self):
         pass

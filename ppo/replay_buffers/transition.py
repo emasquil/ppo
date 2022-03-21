@@ -9,3 +9,5 @@ class Transition:
     reward_tp1: float
     observation_tp1: chex.ArrayNumpy
     done_tp1: bool
+    advantage_t: float
+

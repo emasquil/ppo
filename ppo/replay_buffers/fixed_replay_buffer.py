@@ -23,7 +23,7 @@ class FixedReplayBuffer(BaseReplayBuffer):
         self.next_timestep = None
 
     def add(
-        self, value: float, log_probability: float, action: np.ndarray, next_timestep: dm_env.TimeStep
+        self, value: float, log_probability: float, action: np.ndarray, next_timestep: dm_env.TimeStep, advantage: float
     ) -> None:
         """Add a new transition to memory."""
         assert (
@@ -49,6 +49,7 @@ class FixedReplayBuffer(BaseReplayBuffer):
             reward_tp1=self.next_timestep.reward,
             observation_tp1=self.next_timestep.observation,
             done_tp1=self.next_timestep.last(),
+            advantage_t=advantage,
         )
 
         # convert every data into jnp array
