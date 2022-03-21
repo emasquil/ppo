@@ -55,7 +55,7 @@ class BaseAgent(Actor):
         # Convert to get a batch shape
         observation = tree_util.tree_map(lambda x: jnp.expand_dims(x, axis=0), observation)
 
-        action, log_prob = self.sampling_policy(self.policy_params, next(self.greedy_keys), observation)
+        action, log_prob = self.sampling_policy(self.policy_params, next(self.sampling_keys), observation)
 
         # Convert back to single action
         action = tree_util.tree_map(lambda x: jnp.array(x).squeeze(axis=0), action)

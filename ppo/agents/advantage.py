@@ -1,11 +1,11 @@
 import jax.numpy as jnp
-from dataclasses import replace
 
 
-def general_advantage_estmation(agent, last_timestep, discount=0.99, gae_lambda=0.95):
+def general_advantage_estmation(trajectory, agent, last_timestep, discount=0.99, gae_lambda=0.95):
     """Estimate advantage function
 
     Args:
+        trajectory (_type_): _description_
         agent (_type_): _description_
         last_timestep (_type_): _description_
         discount (float, optional): _description_. Defaults to 0.99.
@@ -14,7 +14,6 @@ def general_advantage_estmation(agent, last_timestep, discount=0.99, gae_lambda=
     Returns:
         _type_: _description_
     """
-    trajectory = agent.replay_buffer._memory
     last_value = agent.get_value(last_timestep.observation)
     last_done = last_timestep.last()
     advantages = jnp.zeros(len(trajectory))
@@ -31,10 +30,3 @@ def general_advantage_estmation(agent, last_timestep, discount=0.99, gae_lambda=
         lastgaelam = advantages[t]
 
     return advantages
-
-
-def add_advantage(advantages, agent):
-    # Add advantage to the trajectory
-    trajectory = agent.replay_buffer._memory
-    for t in range(len(trajectory)):
-        agent.replay_buffer._memory[t] = replace(agent.replay_buffer._memory[t], advantage_t=advantages[t])

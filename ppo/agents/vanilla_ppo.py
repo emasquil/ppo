@@ -10,10 +10,11 @@ from ppo.replay_buffers import FixedReplayBuffer
 
 class VanillaPPO(BaseAgent):
     """Still need to code the methods:
-        value_loss
-        policy_loss
-        update
+    value_loss
+    policy_loss
+    update
     """
+
     def __init__(
         self,
         observation_spec: specs.BoundedArray,
@@ -34,3 +35,6 @@ class VanillaPPO(BaseAgent):
 
     def update(self):
         pass
+
+    def add_advantage(self, advantages):
+        self.replay_buffer.add_advantage(advantages)
