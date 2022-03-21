@@ -1,3 +1,5 @@
+from dataclasses import replace
+
 import numpy as np
 import jax
 import jax.numpy as jnp
@@ -13,6 +15,7 @@ class BaseReplayBuffer:
         self._memory = list()
         self._maxlen = buffer_capacity
         self.sampling_keys = hk.PRNGSequence(1)
+
     def __len__(self) -> int:
         return len(self._memory)
 
@@ -33,12 +36,22 @@ class BaseReplayBuffer:
         """Randomly sample and empty the enitre memory."""
         n_samples = len(self._memory)
         assert n_samples > 0, "replay buffer is unfilled"
-        all_transitions = [self.sample_pop_a_transition() for _ in range(n_samples)] 
+        all_transitions = [self.sample_pop_a_transition() for _ in range(n_samples)]
 
         stacked_transitions = {}
         for attribute in all_transitions[0]:
-          arrays = [transition[attribute] for transition in all_transitions]
-          arrays = jnp.stack(arrays, axis=0)
-          stacked_transitions[attribute] = arrays
+            arrays = [transition[attribute] for transition in all_transitions]
+            arrays = jnp.stack(arrays, axis=0)
+            stacked_transitions[attribute] = arrays
 
         return Transition(**stacked_transitions)
+
+    def clear(self) -> None:
+        """Empty the entire buffer"""
+        self._memory = list()
+
+    def add_advantage(self, advantages):
+        """Add advantage to the trajectory"""
+        trajectory = self._memory
+        for t in range(len(trajectory)):
+            self._memory[t] = replace(self._memory[t], advantage_t=advantages[t])
