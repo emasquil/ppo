@@ -31,8 +31,8 @@ class VanillaPPO(BaseAgent):
         key: chex.PRNGKey,
         learning_rate: float = 1e-3,
         discount: float = 0.99,
-        clipping_ratio_threshold: float=0.1,
-        max_grad_norm: float=0.5,
+        clipping_ratio_threshold: float = 0.1,
+        max_grad_norm: float = 0.5,
     ):
         super(VanillaPPO, self).__init__(observation_spec, policy_network, value_network, key, learning_rate, discount)
         self.replay_buffer = FixedReplayBuffer(buffer_capacity=50)
@@ -49,35 +49,45 @@ class VanillaPPO(BaseAgent):
         self.replay_buffer.add_advantage(advantages)
 
     def value_loss(self, value_params, batch):
-        pass
+        target_value = (batch.value_t + jnp.expand_dims(batch.advantage_t, 1)).T
+        target_value = jax.lax.stop_gradient(target_value)
+        predicted_value = self.value_network.apply(value_params, batch.observation_t)
+        loss = jnp.mean(jnp.square(target_value - predicted_value))
+        return loss
 
     def policy_loss(self, policy_params: hk.Params, batch: Transition):
-        replace(batch, advantage_t=(batch.advantage_t - jnp.mean(batch.advantage_t, axis=0)) / (jnp.std(batch.advantage_t, axis=0) + 1e-8))
-       
+        replace(
+            batch,
+            advantage_t=(batch.advantage_t - jnp.mean(batch.advantage_t, axis=0))
+            / (jnp.std(batch.advantage_t, axis=0) + 1e-8),
+        )
+
         mu, sigma = self.policy_network.apply(policy_params, batch.observation_t)
         log_probability_t = rlax.gaussian_diagonal().logprob(batch.action_t, mu, sigma)
         log_ratio = log_probability_t - batch.log_probability_t
         ratio = jnp.exp(log_ratio)
-        
-        clipped_loss = jnp.minimum(ratio * batch.advantage_t, jax.lax.clamp(1 - self.clipping_ratio_threshold, ratio, 1 - self.clipping_ratio_threshold) * batch.advantage_t)
-        
-        return - jnp.mean(clipped_loss)
+
+        clipped_loss = jnp.minimum(
+            ratio * batch.advantage_t,
+            jax.lax.clamp(1 - self.clipping_ratio_threshold, ratio, 1 - self.clipping_ratio_threshold)
+            * batch.advantage_t,
+        )
+
+        return -jnp.mean(clipped_loss)
 
     def update(self, batch: Transition):
         # Update value network
-        # (_, advantage), value_gradients = jax.value_and_grad(
-        #     self.value_loss, has_aux=True
-        # )(self.value_params, self.timestep, self.next_timestep)
-        # advantage = jax.lax.stop_gradient(advantage)
-
-        # value_updates, self.value_optimizer_state = self.value_optimizer.update(
-        #     value_gradients, self.value_optimizer_state
-        # )
-        # self.value_params = optax.apply_updates(self.value_params, value_updates)
+        value_gradients = jax.grad(self.value_loss)(self.value_params, batch)
+        clip_grads(value_gradients, self.max_grad_norm)
+        value_updates, self.value_optimizer_state = self.value_optimizer.update(
+            value_gradients, self.value_optimizer_state
+        )
+        self.value_params = optax.apply_updates(self.value_params, value_updates)
 
         # Update policy network
-        policy_gradients = jax.grad(self.policy_loss, has_aux=True)(
-            self.policy_params, batch, 
+        policy_gradients = jax.grad(self.policy_loss)(
+            self.policy_params,
+            batch,
         )
         clip_grads(policy_gradients, self.max_grad_norm)
 
