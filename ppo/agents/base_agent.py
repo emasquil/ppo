@@ -51,7 +51,7 @@ class BaseAgent(Actor):
 
         self.discount = discount
 
-    def select_action_and_prob(self, observation: np.ndarray) -> Tuple[np.ndarray]:
+    def select_action_and_prob(self, observation: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         # Convert to get a batch shape
         observation = tree_util.tree_map(lambda x: jnp.expand_dims(x, axis=0), observation)
 
