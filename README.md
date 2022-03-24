@@ -2,6 +2,9 @@
 Proximal Policy Optimization Algorithm implementation for the Deep Reinforcement Learning course @MVA
 
 
+[![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/emasquil/ppo/blob/main/ppo.ipynb)
+
+
 ## Install
 First you need to clone the repository. For that, you can use the following command line:
 ```Bash
