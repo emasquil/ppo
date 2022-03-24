@@ -48,7 +48,7 @@ class VanillaPPO(BaseAgent):
     def add_advantage(self, advantages):
         self.replay_buffer.add_advantage(advantages)
 
-    def value_loss(self, value_params, batch):
+    def value_loss(self, value_params: hk.Params, batch: Transition):
         target_value = (batch.value_t + jnp.expand_dims(batch.advantage_t, 1)).T
         target_value = jax.lax.stop_gradient(target_value)
         predicted_value = self.value_network.apply(value_params, batch.observation_t)
