@@ -1,15 +1,15 @@
 import jax.numpy as jnp
 
 
-def general_advantage_estmation(trajectory, agent, last_timestep, discount=0.99, gae_lambda=0.95):
+def general_advantage_estmation(trajectory, agent, last_timestep, discount, gae_lambda):
     """Estimate advantage function
 
     Args:
         trajectory (_type_): _description_
         agent (_type_): _description_
         last_timestep (_type_): _description_
-        discount (float, optional): _description_. Defaults to 0.99.
-        gae_lambda (float, optional): _description_. Defaults to 0.95.
+        discount (float, optional): _description_.
+        gae_lambda (float, optional): _description_.
 
     Returns:
         _type_: _description_

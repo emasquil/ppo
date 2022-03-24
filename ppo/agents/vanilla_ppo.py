@@ -29,13 +29,13 @@ class VanillaPPO(BaseAgent):
         policy_network,
         value_network,
         key: chex.PRNGKey,
-        learning_rate: float = 1e-3,
-        discount: float = 0.99,
-        clipping_ratio_threshold: float = 0.1,
-        max_grad_norm: float = 0.5,
+        learning_rate: float,
+        discount: float,
+        clipping_ratio_threshold: float,
+        max_grad_norm: float,
     ):
         super(VanillaPPO, self).__init__(observation_spec, policy_network, value_network, key, learning_rate, discount)
-        self.replay_buffer = FixedReplayBuffer(buffer_capacity=50)
+        self.replay_buffer = FixedReplayBuffer()
         self.clipping_ratio_threshold = clipping_ratio_threshold
         self.max_grad_norm = max_grad_norm
         self.value_and_grad_value_loss = jax.jit(jax.value_and_grad(self.value_loss))
