@@ -38,6 +38,8 @@ class VanillaPPO(BaseAgent):
         self.replay_buffer = FixedReplayBuffer(buffer_capacity=50)
         self.clipping_ratio_threshold = clipping_ratio_threshold
         self.max_grad_norm = max_grad_norm
+        self.value_and_grad_value_loss = jax.jit(jax.value_and_grad(self.value_loss))
+        self.value_and_grad_policy_loss = jax.jit(jax.value_and_grad(self.policy_loss))
 
     def observe_first(self, timestep: dm_env.TimeStep) -> None:
         self.replay_buffer.add_first(timestep)
@@ -77,7 +79,7 @@ class VanillaPPO(BaseAgent):
 
     def update(self, batch: Transition):
         # Update value network
-        value_gradients = jax.grad(self.value_loss)(self.value_params, batch)
+        value_loss, value_gradients = self.value_and_grad_value_loss(self.value_params, batch)
         clip_grads(value_gradients, self.max_grad_norm)
         value_updates, self.value_optimizer_state = self.value_optimizer.update(
             value_gradients, self.value_optimizer_state
@@ -85,13 +87,14 @@ class VanillaPPO(BaseAgent):
         self.value_params = optax.apply_updates(self.value_params, value_updates)
 
         # Update policy network
-        policy_gradients = jax.grad(self.policy_loss)(
+        policy_loss, policy_gradients = self.value_and_grad_policy_loss(
             self.policy_params,
             batch,
         )
         clip_grads(policy_gradients, self.max_grad_norm)
-
         policy_updates, self.policy_optimizer_state = self.policy_optimizer.update(
             policy_gradients, self.policy_optimizer_state
         )
         self.policy_params = optax.apply_updates(self.policy_params, policy_updates)
+
+        return value_loss, policy_loss
