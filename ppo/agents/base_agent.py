@@ -19,8 +19,8 @@ class BaseAgent(Actor):
         policy_network,
         value_network,
         key: chex.PRNGKey,
-        learning_rate: float = 1e-3,
-        discount: float = 0.99,
+        learning_rate: float,
+        discount: float,
     ):
         policy_key, value_key = jax.random.split(key, 2)
         self.policy_network = hk.without_apply_rng(hk.transform(policy_network))

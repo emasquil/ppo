@@ -37,9 +37,6 @@ class FixedReplayBuffer(BaseReplayBuffer):
         else:
             self.timestep = self.next_timestep
             self.next_timestep = next_timestep
-        
-        if len(self._memory) >= self._maxlen:
-            self._memory.pop(0)  # remove first elem (oldest)
 
         transition = Transition(
             observation_t=self.timestep.observation,
