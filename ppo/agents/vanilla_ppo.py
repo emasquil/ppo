@@ -80,6 +80,16 @@ class VanillaPPO(BaseAgent):
         
         return -jnp.mean(clipped_loss), jnp.mean(kl_approximation)
 
+
+    def kl_divergence(self, policy_params: hk.Params, batch: Transition):
+        mu, sigma = self.policy_network.apply(policy_params, batch.observation_t)
+        log_probability_t = rlax.gaussian_diagonal().logprob(batch.action_t, mu, sigma)
+        log_ratio = log_probability_t - batch.log_probability_t
+        ratio = jnp.exp(log_ratio)
+        kl_approximation = (ratio - 1) - log_ratio #cf http://joschu.net/blog/kl-approx.html
+
+        return jnp.mean(kl_approximation)    
+
     def update(self, batch: Transition):
         # Update value network
         value_loss, value_gradients = self.value_and_grad_value_loss(self.value_params, batch)
@@ -89,8 +99,11 @@ class VanillaPPO(BaseAgent):
         )
         self.value_params = optax.apply_updates(self.value_params, value_updates)
 
+        # Compute the KL divergence (approximation) between the old and the current policy
+        kl_approximation = self.kl_divergence(self.policy_params, batch)
+
         # Update policy network
-        policy_loss, kl_approximation, policy_gradients = self.value_and_grad_policy_loss(
+        policy_loss, policy_gradients = self.value_and_grad_policy_loss(
             self.policy_params,
             batch,
         )
