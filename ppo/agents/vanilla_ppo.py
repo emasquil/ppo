@@ -76,9 +76,8 @@ class VanillaPPO(BaseAgent):
             jax.lax.clamp(1 - self.clipping_ratio_threshold, ratio, 1 - self.clipping_ratio_threshold)
             * batch.advantage_t,
         )
-        kl_approximation = (ratio - 1) - log_ratio #cf http://joschu.net/blog/kl-approx.html
         
-        return -jnp.mean(clipped_loss), jnp.mean(kl_approximation)
+        return -jnp.mean(clipped_loss)
 
 
     def kl_divergence(self, policy_params: hk.Params, batch: Transition):
