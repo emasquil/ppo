@@ -18,11 +18,12 @@ class BaseAgent(Actor):
         observation_spec: specs.BoundedArray,
         policy_network,
         value_network,
-        key: chex.PRNGKey,
+        key_networks: int,
+        key_sampling_policy: int,
         learning_rate: float,
         discount: float,
     ):
-        policy_key, value_key = jax.random.split(key, 2)
+        policy_key, value_key = jax.random.split(jax.random.PRNGKey(key_networks), 2)
         self.policy_network = hk.without_apply_rng(hk.transform(policy_network))
         self.policy_params = self.policy_network.init(rng=policy_key, observations=jnp.zeros(observation_spec.shape))
         self.value_network = hk.without_apply_rng(hk.transform(value_network))
@@ -42,7 +43,7 @@ class BaseAgent(Actor):
             return action, log_prob
 
         self.sampling_policy = sampling_policy
-        self.sampling_keys = hk.PRNGSequence(1)
+        self.sampling_keys = hk.PRNGSequence(key_sampling_policy)
 
         def policy(policy_params: hk.Params, observation: np.ndarray):
             return self.policy_network.apply(policy_params, observation)[0]

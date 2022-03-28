@@ -6,7 +6,6 @@ import jax
 import jax.numpy as jnp
 from jax.experimental.optimizers import clip_grads
 import rlax
-import chex
 import optax
 import haiku as hk
 from acme import specs
@@ -28,13 +27,14 @@ class VanillaPPO(BaseAgent):
         observation_spec: specs.BoundedArray,
         policy_network,
         value_network,
-        key: chex.PRNGKey,
+        key_networks: int,
+        key_sampling_policy: int,
         learning_rate: float,
         discount: float,
         clipping_ratio_threshold: float,
         max_grad_norm: float,
     ):
-        super(VanillaPPO, self).__init__(observation_spec, policy_network, value_network, key, learning_rate, discount)
+        super(VanillaPPO, self).__init__(observation_spec, policy_network, value_network, key_networks, key_sampling_policy, learning_rate, discount)
         self.replay_buffer = FixedReplayBuffer()
         self.clipping_ratio_threshold = clipping_ratio_threshold
         self.max_grad_norm = max_grad_norm
