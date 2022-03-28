@@ -9,12 +9,12 @@ from ppo.replay_buffers.transition import Transition
 
 
 class DataLoader:
-    def __init__(self, replay_buffer: BaseReplayBuffer, batch_size: int) -> None:
+    def __init__(self, replay_buffer: BaseReplayBuffer, batch_size: int, key_shuffling_batch: int) -> None:
         self.replay_buffer = replay_buffer
         self.batch_size = batch_size
 
         self.indexes = np.arange(0, len(self.replay_buffer))
-        self.suffling_keys = hk.PRNGSequence(1)
+        self.suffling_keys = hk.PRNGSequence(key_shuffling_batch)
 
     def __len__(self) -> int:
         return np.ceil(len(self.replay_buffer) / self.batch_size).astype(int)
