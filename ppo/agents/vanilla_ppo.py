@@ -33,11 +33,13 @@ class VanillaPPO(BaseAgent):
         discount: float,
         clipping_ratio_threshold: float,
         max_grad_norm: float,
+        kl_threshold: float,
     ):
         super(VanillaPPO, self).__init__(observation_spec, policy_network, value_network, key_networks, key_sampling_policy, learning_rate, discount)
         self.replay_buffer = FixedReplayBuffer()
         self.clipping_ratio_threshold = clipping_ratio_threshold
         self.max_grad_norm = max_grad_norm
+        self.kl_threshold = kl_threshold
         self.value_and_grad_value_loss = jax.jit(jax.value_and_grad(self.value_loss))
         self.value_and_grad_policy_loss = jax.jit(jax.value_and_grad(self.policy_loss))
 
@@ -74,8 +76,9 @@ class VanillaPPO(BaseAgent):
             jax.lax.clamp(1 - self.clipping_ratio_threshold, ratio, 1 - self.clipping_ratio_threshold)
             * batch.advantage_t,
         )
-
-        return -jnp.mean(clipped_loss)
+        kl_approximation = (ratio - 1) - log_ratio #cf http://joschu.net/blog/kl-approx.html
+        
+        return -jnp.mean(clipped_loss), jnp.mean(kl_approximation)
 
     def update(self, batch: Transition):
         # Update value network
@@ -87,7 +90,7 @@ class VanillaPPO(BaseAgent):
         self.value_params = optax.apply_updates(self.value_params, value_updates)
 
         # Update policy network
-        policy_loss, policy_gradients = self.value_and_grad_policy_loss(
+        policy_loss, kl_approximation, policy_gradients = self.value_and_grad_policy_loss(
             self.policy_params,
             batch,
         )
@@ -97,4 +100,4 @@ class VanillaPPO(BaseAgent):
         )
         self.policy_params = optax.apply_updates(self.policy_params, policy_updates)
 
-        return value_loss, policy_loss
+        return value_loss, policy_loss, kl_approximation
