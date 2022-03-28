@@ -17,7 +17,6 @@ class ValueNetwork(hk.Module):
 
         for output_size in self._output_sizes:
             h = hk.Linear(output_size)(h)
-            h = hk.LayerNorm(axis=-1, create_scale=True, create_offset=True)(h)
-            h = jax.nn.relu(h)
+            h = jax.nn.tanh(h)
 
         return hk.Linear(1)(h)[..., 0]
