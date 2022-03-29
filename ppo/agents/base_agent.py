@@ -1,3 +1,4 @@
+from subprocess import call
 from typing import Tuple
 import numpy as np
 
@@ -30,16 +31,16 @@ class BaseAgent(Actor):
         self.value_params = self.value_network.init(rng=value_key, observations=jnp.zeros(observation_spec.shape))
 
         if learning_rate_params["annealing"]:
-            learning_rate_schedule = optax.linear_schedule(
+            self.learning_rate_schedule = optax.linear_schedule(
                 learning_rate_params["initial_learning_rate"], 
                 learning_rate_params["last_learning_rate"], 
                 learning_rate_params["annealing_duration"]
             )
         else:
-            learning_rate_schedule = learning_rate_params["initial_learning_rate"]
-        self.policy_optimizer = optax.adam(learning_rate_schedule)
+            self.learning_rate_schedule = learning_rate_params["initial_learning_rate"]
+        self.policy_optimizer = optax.adam(self.learning_rate_schedule)
         self.policy_optimizer_state = self.policy_optimizer.init(self.policy_params)
-        self.value_optimizer = optax.adam(learning_rate_schedule)
+        self.value_optimizer = optax.adam(self.learning_rate_schedule)
         self.value_optimizer_state = self.value_optimizer.init(self.value_params)
 
         def sampling_policy(policy_params: hk.Params, key: chex.PRNGKey, observation: np.ndarray):
@@ -83,3 +84,8 @@ class BaseAgent(Actor):
         # Convert back to single action
         action = tree_util.tree_map(lambda x: jnp.array(x).squeeze(axis=0), action)
         return action
+
+    def get_learning_rate(self):
+        if callable(self.learning_rate_schedule):
+            return self.learning_rate_schedule(int(self.policy_optimizer_state[1].count))
+        return self.learning_rate_schedule
