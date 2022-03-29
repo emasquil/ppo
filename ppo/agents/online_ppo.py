@@ -21,8 +21,8 @@ class OnlinePPO(BaseAgent):
         policy_network,
         value_network,
         key: chex.PRNGKey,
-        learning_rate: float = 1e-3,
-        discount: float = 0.99,
+        learning_rate,
+        discount,
     ):
         super(OnlinePPO, self).__init__(observation_spec, policy_network, value_network, key, learning_rate, discount)
         self.timestep = None

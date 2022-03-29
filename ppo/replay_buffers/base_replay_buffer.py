@@ -11,9 +11,8 @@ from ppo.replay_buffers.transition import Transition
 class BaseReplayBuffer:
     """Fixed-size base buffer to store transition tuples."""
 
-    def __init__(self, buffer_capacity: int) -> None:
+    def __init__(self) -> None:
         self._memory = list()
-        self._maxlen = buffer_capacity
         self.sampling_keys = hk.PRNGSequence(1)
 
     def __len__(self) -> int:

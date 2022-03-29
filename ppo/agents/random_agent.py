@@ -1,4 +1,4 @@
-from typing import *
+from typing import Mapping
 
 from acme import Actor, specs, types
 import dm_env
@@ -10,7 +10,7 @@ class RandomAgent(Actor):
     def __init__(self, environment_spec: specs.EnvironmentSpec) -> None:
         self.environment_spec = environment_spec
 
-    def select_action(self, observation: types.NestedArray) -> chex.Array:
+    def select_action(self, observation: types.NestedArray) -> np.ndarray:
         action_shape = self.environment_spec.actions.shape
         max_action, min_action = (
             self.environment_spec.actions.maximum,
