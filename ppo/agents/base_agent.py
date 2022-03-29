@@ -29,11 +29,14 @@ class BaseAgent(Actor):
         self.value_network = hk.without_apply_rng(hk.transform(value_network))
         self.value_params = self.value_network.init(rng=value_key, observations=jnp.zeros(observation_spec.shape))
 
-        learning_rate_schedule = optax.linear_schedule(
-            learning_rate_params["initial_learning_rate"], 
-            learning_rate_params["last_learning_rate"], 
-            learning_rate_params["annealing_duration"]
-        )
+        if learning_rate_params["annealing"]:
+            learning_rate_schedule = optax.linear_schedule(
+                learning_rate_params["initial_learning_rate"], 
+                learning_rate_params["last_learning_rate"], 
+                learning_rate_params["annealing_duration"]
+            )
+        else:
+            learning_rate_schedule = learning_rate_params["initial_learning_rate"]
         self.policy_optimizer = optax.adam(learning_rate_schedule)
         self.policy_optimizer_state = self.policy_optimizer.init(self.policy_params)
         self.value_optimizer = optax.adam(learning_rate_schedule)
