@@ -31,7 +31,7 @@ class BaseAgent(Actor):
 
         learning_rate_schedule = optax.linear_schedule(
             learning_rate_params["initial_learning_rate"], 
-            learning_rate_params["end_learning_rate"], 
+            learning_rate_params["last_learning_rate"], 
             learning_rate_params["annealing_duration"]
         )
         self.policy_optimizer = optax.adam(learning_rate_schedule)
