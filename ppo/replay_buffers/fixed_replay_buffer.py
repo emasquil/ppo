@@ -44,7 +44,6 @@ class FixedReplayBuffer(BaseReplayBuffer):
             value_t=value,
             log_probability_t=log_probability,
             reward_tp1=self.next_timestep.reward,
-            observation_tp1=self.next_timestep.observation,
             done_tp1=self.next_timestep.last(),
             advantage_t=None
         )
