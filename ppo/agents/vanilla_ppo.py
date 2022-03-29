@@ -1,5 +1,4 @@
 import numpy as np
-from dataclasses import replace
 
 import dm_env
 import jax
@@ -58,11 +57,7 @@ class VanillaPPO(BaseAgent):
         return loss
 
     def policy_loss(self, policy_params: hk.Params, batch: Transition):
-        replace(
-            batch,
-            advantage_t=(batch.advantage_t - jnp.mean(batch.advantage_t, axis=0))
-            / (jnp.std(batch.advantage_t, axis=0) + 1e-8),
-        )
+        normalized_advantage_t = (batch.advantage_t - jnp.mean(batch.advantage_t, axis=0)) / (jnp.std(batch.advantage_t, axis=0) + 1e-8)
 
         mu, sigma = self.policy_network.apply(policy_params, batch.observation_t)
         log_probability_t = rlax.gaussian_diagonal().logprob(batch.action_t, mu, sigma)
@@ -70,9 +65,9 @@ class VanillaPPO(BaseAgent):
         ratio = jnp.exp(log_ratio)
 
         clipped_loss = jnp.minimum(
-            ratio * jnp.squeeze(batch.advantage_t),
+            ratio * jnp.squeeze(normalized_advantage_t),
             jax.lax.clamp(1 - self.clipping_ratio_threshold, ratio, 1 - self.clipping_ratio_threshold)
-            * jnp.squeeze(batch.advantage_t),
+            * jnp.squeeze(normalized_advantage_t),
         )
         # Compute the KL divergence (approximation) between the old and the current policy
         kl_approximation = (ratio - 1) - log_ratio #cf http://joschu.net/blog/kl-approx.html
