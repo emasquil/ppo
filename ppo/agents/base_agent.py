@@ -20,7 +20,7 @@ class BaseAgent(Actor):
         value_network,
         key_networks: int,
         key_sampling_policy: int,
-        learning_rate: float,
+        learning_rate_params: dict,
         discount: float,
     ):
         policy_key, value_key = jax.random.split(jax.random.PRNGKey(key_networks), 2)
@@ -29,9 +29,14 @@ class BaseAgent(Actor):
         self.value_network = hk.without_apply_rng(hk.transform(value_network))
         self.value_params = self.value_network.init(rng=value_key, observations=jnp.zeros(observation_spec.shape))
 
-        self.policy_optimizer = optax.adam(learning_rate)
+        learning_rate_schedule = optax.linear_schedule(
+            learning_rate_params["initial_learning_rate"], 
+            learning_rate_params["end_learning_rate"], 
+            learning_rate_params["annealing_duration"]
+        )
+        self.policy_optimizer = optax.adam(learning_rate_schedule)
         self.policy_optimizer_state = self.policy_optimizer.init(self.policy_params)
-        self.value_optimizer = optax.adam(learning_rate)
+        self.value_optimizer = optax.adam(learning_rate_schedule)
         self.value_optimizer_state = self.value_optimizer.init(self.value_params)
 
         def sampling_policy(policy_params: hk.Params, key: chex.PRNGKey, observation: np.ndarray):
