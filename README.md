@@ -10,7 +10,7 @@ First you need to clone the repository. For that, you can use the following comm
 ```Bash
 git clone git@github.com:emasquil/ppo.git
 ```
-Then we recommand using a virtual environment, this can be done by the following:
+Then we recommend using a virtual environment, this can be done by the following:
 ```Bash
 python3 -m venv env
 source env/bin/activate
@@ -24,10 +24,12 @@ If you are planning on developing the package you will need to add `[dev]` at th
 pip install -e .[dev]
 ```
 
-If you want to run the [demo](ppo.ipynb) you might need to install the following.
+This package uses MuJoCo environments, please install it by following these [instructions](https://github.com/openai/mujoco-py/).
+
+Note that you might need to install the following.
 
 ```
-sudo apt-get install -y xvfb ffmpeg freeglut3-dev
+sudo apt-get install -y xvfb ffmpeg freeglut3-dev libosmesa6-dev patchelf
 ```
 
 
