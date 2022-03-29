@@ -84,7 +84,7 @@ if __name__ == "__main__":
     max_steps = 300
     observation = env.reset()
     for t in range(max_steps):
-        env.render()
+        env.render("human")
         action = np.random.uniform(-2.0, 2.0, size=(1,))
         time_step = env.step(action)
         if time_step.last():
