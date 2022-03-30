@@ -72,23 +72,5 @@ class PolicyNetComplete(hk.Module):
         self,
         x: chex.Array,
     ) -> Tuple[chex.Array, chex.Array]:
-        action_shape = self._action_spec.shape
-        action_dims = np.prod(action_shape)
-
-        h = x
-
-        for idx_hidden_layer, hidden_layer_params in enumerate(self._hidden_layers_params, start=1):
-            h = LinearOrthogonal(
-                hidden_layer_params["output_size"],
-                hidden_layer_params["std"],
-                hidden_layer_params["bias"],
-                f"policy_layer{idx_hidden_layer}",
-            )(h)
-            h = jax.nn.tanh(h)
-
-        h = LinearOrthogonal(
-            action_dims, self._last_layer_params["std"], self._last_layer_params["bias"], "policy_last_layer"
-        )(h)
-
-        return hk.Reshape(action_shape)(h), self._sigma * jnp.ones(action_dims)
-
+        # TODO: implement a network or a parameter that predicts the sigma
+        pass
