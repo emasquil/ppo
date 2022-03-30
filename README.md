@@ -4,7 +4,7 @@
 
 This repository provides a clean code of the PPO algorithm using [JAX](https://github.com/google/jax) and [Haiku](https://github.com/deepmind/dm-haiku).
 
-Interested readers can have a look to our [report](./report.pdf) that goes deep into the details.
+Interested readers can have a look to our [report](./report.pdf) that goes deeper into the details.
 
 ## Environments
 ### Continuous
@@ -31,7 +31,7 @@ Interested readers can have a look to our [report](./report.pdf) that goes deep 
 ### Loss
 - [x] Using Generalized Advantage Estimation (GAE).
 - [x] Clipped ratio  
-- [x] Minimum between $\text{ratio} \cdot \text{GAE}$ and $\text{clipped\_ratio} \cdot \text{GAE}$
+- [x] Minimum between ratio x GAE and clipped_ratio x GAE
 - [x] Normalized advantage for the policy loss.
 - [ ] Clipped value loss
 - [ ] Entropy bonus
