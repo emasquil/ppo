@@ -38,9 +38,9 @@ class BaseAgent(Actor):
             )
         else:
             self.learning_rate_schedule = learning_rate_params["initial_learning_rate"]
-        self.policy_optimizer = optax.adam(self.learning_rate_schedule)
+        self.policy_optimizer = optax.adam(self.learning_rate_schedule, eps=1e-5)
         self.policy_optimizer_state = self.policy_optimizer.init(self.policy_params)
-        self.value_optimizer = optax.adam(self.learning_rate_schedule)
+        self.value_optimizer = optax.adam(self.learning_rate_schedule, eps=1e-5)
         self.value_optimizer_state = self.value_optimizer.init(self.value_params)
 
         def sampling_policy(policy_params: hk.Params, key: chex.PRNGKey, observation: np.ndarray):
