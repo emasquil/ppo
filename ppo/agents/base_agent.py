@@ -19,12 +19,12 @@ class BaseAgent(Actor):
         observation_spec: specs.BoundedArray,
         policy_network,
         value_network,
-        key_networks: int,
+        key_init_networks: int,
         key_sampling_policy: int,
         learning_rate_params: dict,
         discount: float,
     ):
-        policy_key, value_key = jax.random.split(key_networks)
+        policy_key, value_key = jax.random.split(key_init_networks)
         self.policy_network = hk.without_apply_rng(hk.transform(policy_network))
         self.policy_params = self.policy_network.init(rng=policy_key, observations=jnp.zeros(observation_spec.shape))
         self.value_network = hk.without_apply_rng(hk.transform(value_network))

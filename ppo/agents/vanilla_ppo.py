@@ -26,8 +26,9 @@ class VanillaPPO(BaseAgent):
         observation_spec: specs.BoundedArray,
         policy_network,
         value_network,
-        key_networks: int,
+        key_init_networks: int,
         key_sampling_policy: int,
+        key_replay_buffer: int,
         learning_rate_params: dict,
         discount: float,
         clipping_ratio_threshold: float,
@@ -37,12 +38,12 @@ class VanillaPPO(BaseAgent):
             observation_spec,
             policy_network,
             value_network,
-            key_networks,
+            key_init_networks,
             key_sampling_policy,
             learning_rate_params,
             discount,
         )
-        self.replay_buffer = FixedReplayBuffer()
+        self.replay_buffer = FixedReplayBuffer(key_replay_buffer)
         self.clipping_ratio_threshold = clipping_ratio_threshold
         self.max_grad_norm = max_grad_norm
         self.value_and_grad_value_loss = jax.jit(jax.value_and_grad(self.value_loss))

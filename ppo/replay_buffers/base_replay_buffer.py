@@ -11,9 +11,9 @@ from ppo.replay_buffers.transition import Transition
 class BaseReplayBuffer:
     """Fixed-size base buffer to store transition tuples."""
 
-    def __init__(self) -> None:
+    def __init__(self, key_replay_buffer) -> None:
         self._memory = list()
-        self.sampling_keys = hk.PRNGSequence(1)
+        self._key_replay_buffer = key_replay_buffer
 
     def __len__(self) -> int:
         return len(self._memory)
@@ -26,7 +26,8 @@ class BaseReplayBuffer:
         """Randomly sample and pop a transition from memory."""
         assert len(self._memory) > 0, "replay buffer is unfilled"
 
-        transition_idx = jax.random.randint(next(self.sampling_keys), shape=[1], minval=0, maxval=len(self._memory))
+        self._key_replay_buffer, rng = jax.random.split(self._key_replay_buffer)
+        transition_idx = jax.random.randint(rng, shape=[1], minval=0, maxval=len(self._memory))
         transition = self._memory.pop(np.array(transition_idx)[0])
 
         return transition

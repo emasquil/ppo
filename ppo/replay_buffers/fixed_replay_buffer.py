@@ -10,8 +10,8 @@ from ppo.replay_buffers.transition import Transition
 class FixedReplayBuffer(BaseReplayBuffer):
     """Fixed-size buffer to store transition tuples."""
 
-    def __init__(self) -> None:
-        super(FixedReplayBuffer, self).__init__()
+    def __init__(self, key_replay_buffer) -> None:
+        super(FixedReplayBuffer, self).__init__(key_replay_buffer)
         self.timestep = None
         self.action = None
         self.next_timestep = None

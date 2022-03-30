@@ -9,12 +9,12 @@ from ppo.replay_buffers.transition import Transition
 
 
 class DataLoader:
-    def __init__(self, replay_buffer: BaseReplayBuffer, batch_size: int, key_shuffling_batch: int) -> None:
+    def __init__(self, replay_buffer: BaseReplayBuffer, batch_size: int, key_dataloader: int) -> None:
         self.replay_buffer = replay_buffer
         self.batch_size = batch_size
 
         self.indexes = np.arange(0, len(self.replay_buffer))
-        self.suffling_keys = hk.PRNGSequence(key_shuffling_batch)
+        self._key_dataloader = key_dataloader
 
     def __len__(self) -> int:
         return np.ceil(len(self.replay_buffer) / self.batch_size).astype(int)
@@ -38,4 +38,5 @@ class DataLoader:
         return Transition(**stacked_transitions)
 
     def shuffle(self) -> None:
-        self.indexes = np.array(jax.random.shuffle(next(self.suffling_keys), self.indexes))
+        self._key_dataloader, rng = jax.random.split(self._key_dataloader)
+        self.indexes = np.array(jax.random.shuffle(rng, self.indexes))
