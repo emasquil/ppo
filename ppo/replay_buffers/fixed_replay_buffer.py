@@ -23,7 +23,6 @@ class FixedReplayBuffer(BaseReplayBuffer):
     def add(self, value: float, log_probability: float, action: np.ndarray, next_timestep: dm_env.TimeStep) -> None:
         """Add a new transition to memory."""
         assert self.timestep is not None, "Please let the agent observe a first timestep."
-        # Convert to get a batch shape
 
         transition = Transition(
             observation_t=self.timestep.observation,
