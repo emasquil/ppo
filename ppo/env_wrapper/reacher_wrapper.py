@@ -9,6 +9,11 @@ class ReacherEnv(dm_env.Environment):
     def __init__(self) -> None:
         super().__init__()
         self._env = gym.make("Reacher-v2")
+        self._env = gym.wrappers.ClipAction(self._env)
+        self._env = gym.wrappers.NormalizeObservation(self._env)
+        self._env = gym.wrappers.TransformObservation(self._env, lambda obs: np.clip(obs, -10, 10))
+        self._env = gym.wrappers.NormalizeReward(self._env)
+        self._env = gym.wrappers.TransformReward(self._env, lambda reward: np.clip(reward, -10, 10))
 
     def reset(self) -> dm_env.TimeStep:
         """Resets the environment and returns an initial observation.
@@ -72,9 +77,7 @@ class ReacherEnv(dm_env.Environment):
         Returns:
             specs.BoundedArray
         """
-        return specs.BoundedArray(
-            shape=(2,), dtype=np.float32, minimum=-1.0, maximum=1.0
-        )
+        return specs.BoundedArray(shape=(2,), dtype=np.float32, minimum=-1.0, maximum=1.0)
 
     def render(self, mode):
         return self._env.render(mode)

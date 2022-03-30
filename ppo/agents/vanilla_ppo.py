@@ -31,9 +31,17 @@ class VanillaPPO(BaseAgent):
         learning_rate_params: dict,
         discount: float,
         clipping_ratio_threshold: float,
-        max_grad_norm: float
+        max_grad_norm: float,
     ):
-        super(VanillaPPO, self).__init__(observation_spec, policy_network, value_network, key_networks, key_sampling_policy, learning_rate_params, discount)
+        super(VanillaPPO, self).__init__(
+            observation_spec,
+            policy_network,
+            value_network,
+            key_networks,
+            key_sampling_policy,
+            learning_rate_params,
+            discount,
+        )
         self.replay_buffer = FixedReplayBuffer()
         self.clipping_ratio_threshold = clipping_ratio_threshold
         self.max_grad_norm = max_grad_norm
@@ -46,8 +54,8 @@ class VanillaPPO(BaseAgent):
     def observe(self, value: float, log_probability: float, action: np.ndarray, next_timestep: dm_env.TimeStep) -> None:
         self.replay_buffer.add(value, log_probability, action, next_timestep)
 
-    def add_advantage(self, advantages):
-        self.replay_buffer.add_advantage(advantages)
+    def add_advantages(self, advantages):
+        self.replay_buffer.add_advantages(advantages)
 
     def value_loss(self, value_params: hk.Params, batch: Transition):
         target_value = (batch.value_t + jnp.expand_dims(batch.advantage_t, 1)).T
@@ -57,7 +65,9 @@ class VanillaPPO(BaseAgent):
         return loss
 
     def policy_loss(self, policy_params: hk.Params, batch: Transition):
-        normalized_advantage_t = (batch.advantage_t - jnp.mean(batch.advantage_t, axis=0)) / (jnp.std(batch.advantage_t, axis=0) + 1e-8)
+        normalized_advantage_t = (batch.advantage_t - jnp.mean(batch.advantage_t, axis=0)) / (
+            jnp.std(batch.advantage_t, axis=0) + 1e-5
+        )
 
         mu, sigma = self.policy_network.apply(policy_params, batch.observation_t)
         log_probability_t = rlax.gaussian_diagonal().logprob(batch.action_t, mu, sigma)
@@ -70,7 +80,7 @@ class VanillaPPO(BaseAgent):
             * jnp.squeeze(normalized_advantage_t),
         )
         # Compute the KL divergence (approximation) between the old and the current policy
-        kl_approximation = (ratio - 1) - log_ratio #cf http://joschu.net/blog/kl-approx.html
+        kl_approximation = (ratio - 1) - log_ratio  # cf http://joschu.net/blog/kl-approx.html
 
         return -jnp.mean(clipped_loss), jnp.mean(kl_approximation)
 
@@ -95,3 +105,14 @@ class VanillaPPO(BaseAgent):
         self.policy_params = optax.apply_updates(self.policy_params, policy_updates)
 
         return value_loss, policy_loss, kl_approximation
+
+    def get_last_value_and_done(self, episode):
+        """Returns the value of the last timestep and if it was a done or not"""
+        return self.replay_buffer.last_value_and_done
+
+    def add_last_value(self, last_timestep):
+        """Add last value for the trajectory"""
+        self.replay_buffer.last_value_and_done = (self.get_value(last_timestep.observation), last_timestep.last())
+
+    def get_full_memory(self) -> list:
+        return self.replay_buffer._memory

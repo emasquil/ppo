@@ -1,7 +1,7 @@
 import jax.numpy as jnp
 
 
-def general_advantage_estimation(trajectory, agent, last_timestep, discount, gae_lambda):
+def general_advantage_estimation(trajectory, last_value, last_done, discount, gae_lambda):
     """Estimate advantage function
 
     Args:
@@ -14,8 +14,6 @@ def general_advantage_estimation(trajectory, agent, last_timestep, discount, gae
     Returns:
         _type_: _description_
     """
-    last_value = agent.get_value(last_timestep.observation)
-    last_done = last_timestep.last()
     advantages = jnp.zeros(len(trajectory))
     lastgaelam = 0.0
     for t in reversed(range(len(trajectory))):

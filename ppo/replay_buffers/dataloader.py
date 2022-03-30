@@ -39,6 +39,3 @@ class DataLoader:
 
     def shuffle(self) -> None:
         self.indexes = np.array(jax.random.shuffle(next(self.suffling_keys), self.indexes))
-
-    def get_full_memory(self) -> list:
-        return self.replay_buffer._memory

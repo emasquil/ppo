@@ -30,8 +30,6 @@ class PolicyNetwork(hk.Module):
             h = LinearOrthogonal(hidden_layer_params["output_size"], hidden_layer_params["std"], hidden_layer_params["bias"], f"policy_layer{idx_hidden_layer}")(h)
             h = jax.nn.tanh(h)
 
-        h = LinearOrthogonal(2 * action_dims, self._last_layer_params["std"], self._last_layer_params["bias"], "policy_last_layer")(h)
-        mu, pre_sigma = jnp.split(h, 2, axis=-1)
-        sigma = jax.nn.softplus(pre_sigma)
+        h = LinearOrthogonal(action_dims, self._last_layer_params["std"], self._last_layer_params["bias"], "policy_last_layer")(h)
 
-        return hk.Reshape(action_shape)(.1 * mu), hk.Reshape(action_shape)(.1 * sigma)
+        return hk.Reshape(action_shape)(h), 0.5 * jnp.eye(action_dims)
