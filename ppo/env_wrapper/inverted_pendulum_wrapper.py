@@ -41,14 +41,14 @@ class InvertedPendulumEnv(dm_env.Environment):
             return dm_env.termination(reward, observation)
         return dm_env.transition(reward, observation)
 
-    def observation_spec(self) -> specs.BoundedArray:
+    def observation_spec(self) -> specs.Array:
         """Returns the type of array used to represent observations.
 
         For the InvertedPendulum-v2 environment,please refer to
         https://github.com/openai/gym/blob/master/gym/envs/mujoco/inverted_pendulum.py
         for further details
         Returns:
-            specs.BoundedArray
+            specs.Array
         """
         return specs.Array(shape=(4,), dtype=np.float32)
 
