@@ -24,7 +24,7 @@ class BaseAgent(Actor):
         learning_rate_params: dict,
         discount: float,
     ):
-        policy_key, value_key = jax.random.split(jax.random.PRNGKey(key_networks), 2)
+        policy_key, value_key = jax.random.split(key_networks)
         self.policy_network = hk.without_apply_rng(hk.transform(policy_network))
         self.policy_params = self.policy_network.init(rng=policy_key, observations=jnp.zeros(observation_spec.shape))
         self.value_network = hk.without_apply_rng(hk.transform(value_network))
@@ -52,7 +52,7 @@ class BaseAgent(Actor):
             return action, log_prob
 
         self.sampling_policy = sampling_policy
-        self.sampling_keys = hk.PRNGSequence(key_sampling_policy)
+        self.sampling_key = key_sampling_policy
 
         def policy(policy_params: hk.Params, observation: np.ndarray):
             return self.policy_network.apply(policy_params, observation)[0]
@@ -65,7 +65,8 @@ class BaseAgent(Actor):
         # Convert to get a batch shape
         observation = tree_util.tree_map(lambda x: jnp.expand_dims(x, axis=0), observation)
 
-        action, log_prob = self.sampling_policy(self.policy_params, next(self.sampling_keys), observation)
+        self.sampling_key, rng = jax.random.split(self.sampling_key)
+        action, log_prob = self.sampling_policy(self.policy_params, rng, observation)
 
         # Convert back to single action
         action = tree_util.tree_map(lambda x: jnp.array(x).squeeze(axis=0), action)
