@@ -10,13 +10,13 @@ if __name__ == "__main__":
     env = PendulumEnv()
 
     num_episodes = 3
+    num_steps = 5
     for e in range(num_episodes):
         timestep = env.reset()
         replay_buffer.add_first(timestep)
 
         rewards = []
         observations = []
-        num_steps = 5
         for t in range(num_steps):
             action = 0.5 * np.ones((1,))
             observations.append(timestep.observation)
