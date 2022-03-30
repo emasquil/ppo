@@ -9,6 +9,11 @@ class ReacherEnv(dm_env.Environment):
     def __init__(self) -> None:
         super().__init__()
         self._env = gym.make("Reacher-v2")
+        self._env = gym.wrappers.ClipAction(self._env)
+        self._env = gym.wrappers.NormalizeObservation(self._env)
+        self._env = gym.wrappers.TransformObservation(self._env, lambda obs: np.clip(obs, -10, 10))
+        self._env = gym.wrappers.NormalizeReward(self._env)
+        self._env = gym.wrappers.TransformReward(self._env, lambda reward: np.clip(reward, -10, 10))
 
     def reset(self) -> dm_env.TimeStep:
         """Resets the environment and returns an initial observation.
@@ -31,9 +36,7 @@ class ReacherEnv(dm_env.Environment):
             dm_env.TimeStep:
         """
         # if action is not cast to numpy, we observe weird behaviour when taking steps
-        observation, reward, done, _ = self._env.step(
-            np.clip(np.array(action), self.action_spec().minimum, self.action_spec().maximum)
-        )
+        observation, reward, done, _ = self._env.step(np.array(action))
         if done:
             return dm_env.termination(reward, observation)
         return dm_env.transition(reward, observation)
