@@ -1,10 +1,20 @@
 # Proximal Policy Optimization (PPO)
 ![python](https://img.shields.io/badge/python-3.7%20|%203.8%20|%203.9-blue)
 <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
+[![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/emasquil/ppo/blob/main/ppo.ipynb)
 
 This repository provides a clean code of the PPO algorithm using [JAX](https://github.com/google/jax) and [Haiku](https://github.com/deepmind/dm-haiku).
 
 Interested readers can have a look to our [report](./report.pdf) that goes deeper into the details.
+
+Feel free to checkout to:
+* [Environments](#environments)
+* [Agents](#agents)
+* [Tricks](#tricks)
+* [How to run it](#how-to-run-it)
+* [Contributing](#contributing)
+* [Inspirations](#inspirations)
+
 
 ## Environments
 ### Continuous
@@ -68,7 +78,6 @@ Note that you might need to install the following.
 ```
 sudo apt-get install -y xvfb ffmpeg freeglut3-dev libosmesa6-dev patchelf libglew-dev
 ```
-
 
 ## Contributing
 Before any pull request, please make sure to format your code using the following:
