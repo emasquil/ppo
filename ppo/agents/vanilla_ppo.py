@@ -69,6 +69,7 @@ class VanillaPPO(BaseAgent):
         normalized_advantage_t = (batch.advantage_t - jnp.mean(batch.advantage_t, axis=0)) / (
             jnp.std(batch.advantage_t, axis=0) + 1e-5
         )
+        normalized_advantage_t = jax.lax.stop_gradient(normalized_advantage_t)
 
         mu, sigma = self.policy_network.apply(policy_params, batch.observation_t)
         log_probability_t = rlax.gaussian_diagonal().logprob(batch.action_t, mu, sigma)
