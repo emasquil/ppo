@@ -15,20 +15,18 @@ class FixedReplayBuffer(BaseReplayBuffer):
         self.timestep = None
         self.action = None
         self.next_timestep = None
+        self.last_value_and_done = (None, None)
 
     def add_first(self, timestep: dm_env.TimeStep) -> None:
-        assert len(self._memory) == 0, f"The replay buffer should be empty but it has lenght {len(self._memory)}"
+        # Create a new trajectory for the new episode
+        self._memory.append([])
         self.timestep = timestep
         self.action = None
         self.next_timestep = None
 
-    def add(
-        self, value: float, log_probability: float, action: np.ndarray, next_timestep: dm_env.TimeStep
-    ) -> None:
+    def add(self, value: float, log_probability: float, action: np.ndarray, next_timestep: dm_env.TimeStep) -> None:
         """Add a new transition to memory."""
-        assert (
-            self.timestep is not None
-        ), "Please let the agent observe a first timestep."
+        assert self.timestep is not None, "Please let the agent observe a first timestep."
         # Convert to get a batch shape
         self.action = action
 
@@ -45,10 +43,11 @@ class FixedReplayBuffer(BaseReplayBuffer):
             log_probability_t=log_probability,
             reward_tp1=self.next_timestep.reward,
             done_tp1=self.next_timestep.last(),
-            advantage_t=None
+            advantage_t=None,
         )
 
         # convert every data into jnp array
         transition = jax.tree_util.tree_map(jnp.array, transition)
 
-        self._memory.append(transition)
+        # we add the transition to the current episode list of transitions
+        self._memory[-1].append(transition)

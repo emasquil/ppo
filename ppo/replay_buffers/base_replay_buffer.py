@@ -49,8 +49,15 @@ class BaseReplayBuffer:
         """Empty the entire buffer"""
         self._memory = list()
 
-    def add_advantage(self, advantages):
+    def add_advantages(self, advantages):
         """Add advantage to the trajectory"""
-        trajectory = self._memory
-        for t in range(len(trajectory)):
-            self._memory[t] = replace(self._memory[t], advantage_t=advantages[t])
+        for episode_index, advantage_episode in enumerate(advantages):
+            trajectory = self._memory[episode_index]
+            for t in range(len(trajectory)):
+                self._memory[episode_index][t] = replace(
+                    self._memory[episode_index][t], advantage_t=advantage_episode[t]
+                )
+
+    def flatten_memory(self):
+        """Flatten all the episodes so the memory becomes a list of transitions"""
+        self._memory = [t for episode in self._memory for t in episode]
