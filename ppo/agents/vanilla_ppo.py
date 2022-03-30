@@ -66,7 +66,7 @@ class VanillaPPO(BaseAgent):
 
     def policy_loss(self, policy_params: hk.Params, batch: Transition):
         normalized_advantage_t = (batch.advantage_t - jnp.mean(batch.advantage_t, axis=0)) / (
-            jnp.std(batch.advantage_t, axis=0) + 1e-8
+            jnp.std(batch.advantage_t, axis=0) + 1e-5
         )
 
         mu, sigma = self.policy_network.apply(policy_params, batch.observation_t)
