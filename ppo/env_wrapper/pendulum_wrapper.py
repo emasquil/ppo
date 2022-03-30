@@ -31,7 +31,10 @@ class PendulumEnv(dm_env.Environment):
             dm_env.TimeStep:
         """
         # if action is not cast to numpy, we observe weird behaviour when taking steps
-        observation, reward, done, _ = self._env.step(np.array(action))
+        # we clip the action before feeding it to the environment
+        observation, reward, done, _ = self._env.step(
+            np.clip(np.array(action), self.action_spec().minimum, self.action_spec().maximum)
+        )
         if done:
             return dm_env.termination(reward, observation)
         return dm_env.transition(reward, observation)
@@ -63,9 +66,7 @@ class PendulumEnv(dm_env.Environment):
         Returns:
             specs.BoundedArray
         """
-        return specs.BoundedArray(
-            shape=(1,), dtype=np.float32, minimum=-2.0, maximum=2.0
-        )
+        return specs.BoundedArray(shape=(1,), dtype=np.float32, minimum=-2.0, maximum=2.0)
 
     def render(self, mode):
         return self._env.render(mode)

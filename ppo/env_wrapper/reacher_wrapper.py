@@ -31,7 +31,9 @@ class ReacherEnv(dm_env.Environment):
             dm_env.TimeStep:
         """
         # if action is not cast to numpy, we observe weird behaviour when taking steps
-        observation, reward, done, _ = self._env.step(np.array(action))
+        observation, reward, done, _ = self._env.step(
+            np.clip(np.array(action), self.action_spec().minimum, self.action_spec().maximum)
+        )
         if done:
             return dm_env.termination(reward, observation)
         return dm_env.transition(reward, observation)
@@ -72,9 +74,7 @@ class ReacherEnv(dm_env.Environment):
         Returns:
             specs.BoundedArray
         """
-        return specs.BoundedArray(
-            shape=(2,), dtype=np.float32, minimum=-1.0, maximum=1.0
-        )
+        return specs.BoundedArray(shape=(2,), dtype=np.float32, minimum=-1.0, maximum=1.0)
 
     def render(self, mode):
         return self._env.render(mode)
