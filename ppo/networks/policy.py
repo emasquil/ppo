@@ -58,6 +58,8 @@ class PolicyNetComplete(hk.Module):
         hidden_layers_params: Sequence[dict],
         last_layer_params: dict,
         action_spec: specs.BoundedArray,
+        min_sigma: float,
+        init_sigma: float,
         name: Optional[str] = None,
     ) -> None:
         """
@@ -67,10 +69,32 @@ class PolicyNetComplete(hk.Module):
         self._hidden_layers_params = hidden_layers_params
         self._last_layer_params = last_layer_params
         self._action_spec = action_spec
+        self._min_sigma = min_sigma
+        self._init_sigma = init_sigma
 
     def __call__(
         self,
         x: chex.Array,
     ) -> Tuple[chex.Array, chex.Array]:
-        # TODO: implement a network or a parameter that predicts the sigma
-        pass
+        action_shape = self._action_spec.shape
+        action_dims = np.prod(action_shape)
+
+        h = x
+
+        for idx_hidden_layer, hidden_layer_params in enumerate(self._hidden_layers_params, start=1):
+            h = LinearOrthogonal(
+                hidden_layer_params["output_size"],
+                hidden_layer_params["std"],
+                hidden_layer_params["bias"],
+                f"policy_layer{idx_hidden_layer}",
+            )(h)
+            h = jax.nn.tanh(h)
+
+        h = LinearOrthogonal(
+            2 * action_dims, self._last_layer_params["std"], self._last_layer_params["bias"], "policy_last_layer"
+        )(h)
+        mu, pre_sigma = jnp.split(h, 2, axis=-1)
+        sigma = jax.nn.softplus(pre_sigma)
+        sigma *= self._init_sigma / jax.nn.softplus(0.0)
+        sigma += self._min_sigma
+        return hk.Reshape(action_shape)(mu * 0.1), hk.Reshape(action_shape)(sigma * 0.1)
