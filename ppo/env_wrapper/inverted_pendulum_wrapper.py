@@ -44,11 +44,9 @@ class InvertedPendulumEnv(dm_env.Environment):
     def observation_spec(self) -> specs.BoundedArray:
         """Returns the type of array used to represent observations.
 
-        For the Pendulum-v1 environment, the observations consists of 3 values:
-            - x position: bounded in (-1, 1)
-            - y position: bounded in (-1, 1)
-            - angular velocity: bounded in (-8, 8)
-
+        For the InvertedPendulum-v2 environment,please refer to
+        https://github.com/openai/gym/blob/master/gym/envs/mujoco/inverted_pendulum.py
+        for further details
         Returns:
             specs.BoundedArray
         """
@@ -57,8 +55,9 @@ class InvertedPendulumEnv(dm_env.Environment):
     def action_spec(self) -> specs.BoundedArray:
         """Returns the type of array used to represent actions
 
-        For the Pendulum-v1 environmet, the action is a single value representing the torque
-        applied to the pendulum. It's bounded between (-2, 2)
+        For the InvertedPendulum-v2 environmet, please refer to
+        https://github.com/openai/gym/blob/master/gym/envs/mujoco/inverted_pendulum.py
+        for further details
 
         Returns:
             specs.BoundedArray
@@ -70,6 +69,7 @@ class InvertedPendulumEnv(dm_env.Environment):
 
     def close(self):
         self._env.close()
+
 
 if __name__ == "__main__":
     env = InvertedPendulumEnv()
