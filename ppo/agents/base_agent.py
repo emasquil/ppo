@@ -16,7 +16,7 @@ import optax
 class BaseAgent(Actor):
     def __init__(
         self,
-        observation_spec: specs.BoundedArray,
+        environment_spec: specs.BoundedArray,
         policy_network,
         value_network,
         key_init_networks: int,
@@ -26,9 +26,9 @@ class BaseAgent(Actor):
     ):
         policy_key, value_key = jax.random.split(key_init_networks)
         self.policy_network = hk.without_apply_rng(hk.transform(policy_network))
-        self.policy_params = self.policy_network.init(rng=policy_key, observations=jnp.zeros(observation_spec.shape))
+        self.policy_params = self.policy_network.init(rng=policy_key, observations=jnp.zeros(environment_spec.observations.shape))
         self.value_network = hk.without_apply_rng(hk.transform(value_network))
-        self.value_params = self.value_network.init(rng=value_key, observations=jnp.zeros(observation_spec.shape))
+        self.value_params = self.value_network.init(rng=value_key, observations=jnp.zeros(environment_spec.observations.shape))
 
         if learning_rate_params["annealing"]:
             self.learning_rate_schedule_policy = optax.linear_schedule(
