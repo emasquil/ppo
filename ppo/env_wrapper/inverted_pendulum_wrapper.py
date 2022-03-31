@@ -4,6 +4,8 @@ from dm_env import specs
 import numpy as np
 import acme
 
+from .custom_wrappers import action_wrapper
+
 
 class InvertedPendulumEnv(dm_env.Environment):
     def __init__(self) -> None:
@@ -12,8 +14,9 @@ class InvertedPendulumEnv(dm_env.Environment):
         self._env = gym.wrappers.ClipAction(self._env)
         self._env = gym.wrappers.NormalizeObservation(self._env)
         self._env = gym.wrappers.TransformObservation(self._env, lambda obs: np.clip(obs, -10, 10))
-        self._env = gym.wrappers.NormalizeReward(self._env)
+        self._env = gym.wrappers.NormalizeReward(self._env, gamma=1)
         self._env = gym.wrappers.TransformReward(self._env, lambda reward: np.clip(reward, -10, 10))
+        self._env = action_wrapper.ActionNormalizer(self._env)
 
     def __str__(self) -> str:
         return "InvertedPendulum"
