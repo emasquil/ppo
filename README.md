@@ -13,6 +13,7 @@ Feel free to checkout to:
 * [Tricks](#tricks)
 * [How to run it](#how-to-run-it)
 * [Contributing](#contributing)
+* [Testing](#testing)
 * [Inspirations](#inspirations)
 
 
@@ -83,6 +84,16 @@ sudo apt-get install -y xvfb ffmpeg freeglut3-dev libosmesa6-dev patchelf libgle
 Before any pull request, please make sure to format your code using the following:
 ```Bash
 black -l 120 ./
+```
+
+## Testing
+To run the tests, please install the package with the following:
+```Bash
+pip install -e .[test]
+```
+Then run:
+```Bash
+pytest
 ```
 
 ## Inspirations
