@@ -31,16 +31,22 @@ class BaseAgent(Actor):
         self.value_params = self.value_network.init(rng=value_key, observations=jnp.zeros(observation_spec.shape))
 
         if learning_rate_params["annealing"]:
-            self.learning_rate_schedule = optax.linear_schedule(
-                learning_rate_params["initial_learning_rate"], 
-                learning_rate_params["last_learning_rate"], 
-                learning_rate_params["annealing_duration"]
+            self.learning_rate_schedule_policy = optax.linear_schedule(
+                learning_rate_params["policy"]["initial_learning_rate"],
+                learning_rate_params["policy"]["last_learning_rate"],
+                learning_rate_params["annealing_duration"],
+            )
+            self.learning_rate_schedule_value = optax.linear_schedule(
+                learning_rate_params["value"]["initial_learning_rate"],
+                learning_rate_params["value"]["last_learning_rate"],
+                learning_rate_params["annealing_duration"],
             )
         else:
-            self.learning_rate_schedule = learning_rate_params["initial_learning_rate"]
-        self.policy_optimizer = optax.adam(self.learning_rate_schedule, eps=1e-5)
+            self.learning_rate_schedule_policy = learning_rate_params["policy"]["initial_learning_rate"]
+            self.learning_rate_schedule_value = learning_rate_params["value"]["initial_learning_rate"]
+        self.policy_optimizer = optax.adam(self.learning_rate_schedule_policy, eps=1e-5)
         self.policy_optimizer_state = self.policy_optimizer.init(self.policy_params)
-        self.value_optimizer = optax.adam(self.learning_rate_schedule, eps=1e-5)
+        self.value_optimizer = optax.adam(self.learning_rate_schedule_value, eps=1e-5)
         self.value_optimizer_state = self.value_optimizer.init(self.value_params)
 
         def sampling_policy(policy_params: hk.Params, key: chex.PRNGKey, observation: np.ndarray):
@@ -87,6 +93,8 @@ class BaseAgent(Actor):
         return action
 
     def get_learning_rate(self):
-        if callable(self.learning_rate_schedule):
-            return self.learning_rate_schedule(int(self.policy_optimizer_state[1].count))
-        return self.learning_rate_schedule
+        if callable(self.learning_rate_schedule_policy):
+            return self.learning_rate_schedule_policy(
+                int(self.policy_optimizer_state[1].count)
+            ), self.learning_rate_schedule_value(int(self.value_optimizer_state[1].count))
+        return self.learning_rate_schedule_policy, self.learning_rate_schedule_value

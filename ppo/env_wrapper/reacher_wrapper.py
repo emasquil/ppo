@@ -15,6 +15,10 @@ class ReacherEnv(dm_env.Environment):
         self._env = gym.wrappers.NormalizeReward(self._env)
         self._env = gym.wrappers.TransformReward(self._env, lambda reward: np.clip(reward, -10, 10))
 
+
+    def __str__(self) -> str:
+        return "ReacherEnv"
+
     def reset(self) -> dm_env.TimeStep:
         """Resets the environment and returns an initial observation.
 
