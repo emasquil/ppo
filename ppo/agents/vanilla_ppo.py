@@ -61,7 +61,7 @@ class VanillaPPO(BaseAgent):
         self.replay_buffer.add_advantages(advantages)
 
     def value_loss(self, value_params: hk.Params, batch: Dict):
-        target_value = (batch["value_t"] + jnp.expand_dims(batch["advantage_t"], 1)).T
+        target_value = batch["value_t"] + batch["advantage_t"]
         target_value = jax.lax.stop_gradient(target_value)
         predicted_value = self.value(value_params, batch["observation_t"])
         loss = jnp.mean(jnp.square(target_value - predicted_value))
@@ -90,6 +90,7 @@ class VanillaPPO(BaseAgent):
 
     def update(self, batch: Dict):
         # Update value network
+
         value_loss, value_gradients = self.value_and_grad_value_loss(self.value_params, batch)
         clip_grads(value_gradients, self.max_grad_norm)
         value_updates, self.value_optimizer_state = self.value_optimizer.update(

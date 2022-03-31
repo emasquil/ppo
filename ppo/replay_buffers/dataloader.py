@@ -30,13 +30,11 @@ class DataLoader:
         idxs = jnp.array(self.indexes[start:end])
 
         transitions = {
-            "observation_t": jnp.take(self.replay_buffer.obs_t, idxs),
-            "advantage_t": jnp.take(self.replay_buffer.advantages_t, idxs),
-            "reward_tp1": jnp.take(self.replay_buffer.rewards_tp1, idxs),
-            "action_t": jnp.take(self.replay_buffer.actions_t, idxs),
-            "log_probability_t": jnp.take(self.replay_buffer.logprobs_t, idxs),
-            "value_t": jnp.take(self.replay_buffer.values_t, idxs),
-            "done_tp1": jnp.take(self.replay_buffer.dones_tp1, idxs),
+            "observation_t": jnp.take(self.replay_buffer.obs_t, idxs, axis=0),
+            "advantage_t": jnp.expand_dims(jnp.take(self.replay_buffer.advantages_t, idxs, axis=0), 1),
+            "action_t": jnp.take(self.replay_buffer.actions_t, idxs, axis=0),
+            "log_probability_t": jnp.take(self.replay_buffer.logprobs_t, idxs, axis=0),
+            "value_t": jnp.take(self.replay_buffer.values_t, idxs, axis=0),
         }
 
         return transitions
