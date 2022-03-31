@@ -3,40 +3,61 @@ import jax.numpy as jnp
 import dm_env
 import numpy as np
 
-from ppo.replay_buffers.base_replay_buffer import BaseReplayBuffer
-from ppo.replay_buffers.transition import Transition
 
-
-class FixedReplayBuffer(BaseReplayBuffer):
+class FixedReplayBuffer:
     """Fixed-size buffer to store transition tuples."""
 
     def __init__(self, key_replay_buffer) -> None:
-        super(FixedReplayBuffer, self).__init__(key_replay_buffer)
         self.timestep = None
-        self.last_value_and_done = (None, None)
+        self.last_value = None
+        self._key_replay_buffer = key_replay_buffer
+
+        # values_t stores one more step (it also stores last value)
+        self.values_t = []
+        self.obs_t = []
+        self.actions_t = []
+        self.rewards_tp1 = []
+        self.advantages_t = []
+        self.dones_tp1 = []
+        self.logprobs_t = []
+
+    def __len__(self):
+        return len(self.dones_tp1)
 
     def add_first(self, timestep: dm_env.TimeStep) -> None:
-        # Create a new trajectory for the new episode
-        self._memory.append([])
         self.timestep = timestep
 
     def add(self, value: float, log_probability: float, action: np.ndarray, next_timestep: dm_env.TimeStep) -> None:
         """Add a new transition to memory."""
         assert self.timestep is not None, "Please let the agent observe a first timestep."
 
-        transition = Transition(
-            observation_t=self.timestep.observation,
-            action_t=action,
-            value_t=value,
-            log_probability_t=log_probability,
-            reward_tp1=next_timestep.reward,
-            done_tp1=next_timestep.last(),
-            advantage_t=None,
-        )
+        self.values_t.append(value)
+        self.obs_t.append(self.timestep.observation)
+        self.actions_t.append(action)
+        self.rewards_tp1.append(next_timestep.reward)
+        self.dones_tp1.append(next_timestep.last())
+        self.logprobs_t.append(log_probability)
         self.timestep = next_timestep
 
-        # convert every data into jnp array
-        transition = jax.tree_util.tree_map(jnp.array, transition)
+    def add_last_value(self, value: float) -> None:
+        self.values_t.append(value)
 
-        # we add the transition to the current episode list of transitions
-        self._memory[-1].append(transition)
+    def clear_memory(self):
+        self.values_t = []
+        self.obs_t = []
+        self.actions_t = []
+        self.rewards_tp1 = []
+        self.advantages_t = []
+        self.dones_tp1 = []
+        self.logprobs_t = []
+
+    def add_advantages(self, advantages):
+        self.advantages_t = advantages
+
+    def cast_to_numpy(self):
+        self.values_t = np.array(self.values_t)
+        self.obs_t = np.array(self.obs_t)
+        self.actions_t = np.array(self.actions_t)
+        self.rewards_tp1 = np.array(self.rewards_tp1)
+        self.dones_tp1 = np.array(self.dones_tp1)
+        self.logprobs_t = np.array(self.logprobs_t)

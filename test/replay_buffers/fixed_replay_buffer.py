@@ -11,12 +11,12 @@ if __name__ == "__main__":
 
     num_episodes = 3
     num_steps = 5
+    rewards = []
+    observations = []
     for e in range(num_episodes):
         timestep = env.reset()
         replay_buffer.add_first(timestep)
 
-        rewards = []
-        observations = []
         for t in range(num_steps):
             action = 0.5 * np.ones((1,))
             observations.append(timestep.observation)
@@ -27,13 +27,12 @@ if __name__ == "__main__":
             if t == num_steps:
                 observations.append(timestep.observation)
 
-        observations = np.array(observations)
-        rewards = np.array(rewards)
-        replay_observatons = np.array([np.array(transition.observation_t) for transition in replay_buffer._memory[-1]])
-        replay_rewards = np.array([np.array(transition.reward_tp1) for transition in replay_buffer._memory[-1]])
+    observations = np.array(observations)
+    rewards = np.array(rewards)
+    replay_observatons = replay_buffer.obs_t
+    replay_rewards = replay_buffer.rewards_tp1
 
-        assert np.all(np.isclose(replay_observatons, observations))
-        assert np.all(np.isclose(replay_rewards, rewards))
+    assert np.all(np.isclose(replay_observatons, observations))
+    assert np.all(np.isclose(replay_rewards, rewards))
 
-        replay_buffer._memory.append([])
     print("Test completed")

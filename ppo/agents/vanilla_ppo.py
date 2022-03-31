@@ -1,3 +1,5 @@
+from typing import Dict
+
 import numpy as np
 
 import dm_env
@@ -11,7 +13,6 @@ from acme import specs
 
 from ppo.agents.base_agent import BaseAgent
 from ppo.replay_buffers import FixedReplayBuffer
-from ppo.replay_buffers.transition import Transition
 
 
 class VanillaPPO(BaseAgent):
@@ -23,7 +24,7 @@ class VanillaPPO(BaseAgent):
 
     def __init__(
         self,
-        observation_spec: specs.BoundedArray,
+        environment_spec: specs.BoundedArray,
         policy_network,
         value_network,
         key_init_networks: int,
@@ -35,7 +36,7 @@ class VanillaPPO(BaseAgent):
         max_grad_norm: float,
     ):
         super().__init__(
-            observation_spec,
+            environment_spec,
             policy_network,
             value_network,
             key_init_networks,
@@ -58,22 +59,22 @@ class VanillaPPO(BaseAgent):
     def add_advantages(self, advantages):
         self.replay_buffer.add_advantages(advantages)
 
-    def value_loss(self, value_params: hk.Params, batch: Transition):
-        target_value = (batch.value_t + jnp.expand_dims(batch.advantage_t, 1)).T
+    def value_loss(self, value_params: hk.Params, batch: Dict):
+        target_value = batch["value_t"] + batch["advantage_t"]
         target_value = jax.lax.stop_gradient(target_value)
-        predicted_value = self.value(value_params, batch.observation_t)
+        predicted_value = self.value(value_params, batch["observation_t"])
         loss = jnp.mean(jnp.square(target_value - predicted_value))
         return loss
 
-    def policy_loss(self, policy_params: hk.Params, batch: Transition):
-        normalized_advantage_t = (batch.advantage_t - jnp.mean(batch.advantage_t, axis=0)) / (
-            jnp.std(batch.advantage_t, axis=0) + 1e-5
+    def policy_loss(self, policy_params: hk.Params, batch: Dict):
+        normalized_advantage_t = (batch["advantage_t"] - jnp.mean(batch["advantage_t"], axis=0)) / (
+            jnp.std(batch["advantage_t"], axis=0) + 1e-5
         )
         normalized_advantage_t = jax.lax.stop_gradient(normalized_advantage_t)
 
-        mu, sigma = self.policy(policy_params, batch.observation_t)
-        log_probability_t = rlax.gaussian_diagonal().logprob(batch.action_t, mu, sigma)
-        log_ratio = log_probability_t - jnp.squeeze(batch.log_probability_t)
+        mu, sigma = self.policy(policy_params, batch["observation_t"])
+        log_probability_t = rlax.gaussian_diagonal().logprob(batch["action_t"], mu, sigma)
+        log_ratio = log_probability_t - jnp.squeeze(batch["log_probability_t"])
         ratio = jnp.exp(log_ratio)
 
         clipped_loss = jnp.minimum(
@@ -86,8 +87,9 @@ class VanillaPPO(BaseAgent):
 
         return -jnp.mean(clipped_loss), jnp.mean(kl_approximation)
 
-    def update(self, batch: Transition):
+    def update(self, batch: Dict):
         # Update value network
+
         value_loss, value_gradients = self.value_and_grad_value_loss(self.value_params, batch)
         clip_grads(value_gradients, self.max_grad_norm)
         value_updates, self.value_optimizer_state = self.value_optimizer.update(
@@ -108,13 +110,12 @@ class VanillaPPO(BaseAgent):
 
         return value_loss, policy_loss, kl_approximation
 
-    def get_last_value_and_done(self, episode):
-        """Returns the value of the last timestep and if it was a done or not"""
-        return self.replay_buffer.last_value_and_done
-
     def add_last_value(self, last_timestep):
         """Add last value for the trajectory"""
-        self.replay_buffer.last_value_and_done = (self.get_value(last_timestep.observation), last_timestep.last())
+        self.replay_buffer.add_last_value(self.get_value(last_timestep.observation))
 
-    def get_full_memory(self) -> list:
-        return self.replay_buffer._memory
+    def clear_memory(self):
+        self.replay_buffer.clear_memory()
+
+    def cast_to_numpy(self):
+        self.replay_buffer.cast_to_numpy()
