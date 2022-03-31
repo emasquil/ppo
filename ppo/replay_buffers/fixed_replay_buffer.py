@@ -26,11 +26,11 @@ class FixedReplayBuffer(BaseReplayBuffer):
 
         transition = Transition(
             observation_t=self.timestep.observation,
+            done_t=self.timestep.last(),
             action_t=action,
             value_t=value,
             log_probability_t=log_probability,
             reward_tp1=next_timestep.reward,
-            done_tp1=next_timestep.last(),
             advantage_t=None,
         )
         self.timestep = next_timestep
