@@ -34,7 +34,7 @@ class VanillaPPO(BaseAgent):
         clipping_ratio_threshold: float,
         max_grad_norm: float,
     ):
-        super(VanillaPPO, self).__init__(
+        super().__init__(
             observation_spec,
             policy_network,
             value_network,
@@ -61,7 +61,7 @@ class VanillaPPO(BaseAgent):
     def value_loss(self, value_params: hk.Params, batch: Transition):
         target_value = (batch.value_t + jnp.expand_dims(batch.advantage_t, 1)).T
         target_value = jax.lax.stop_gradient(target_value)
-        predicted_value = self.value_network.apply(value_params, batch.observation_t)
+        predicted_value = self.value(value_params, batch.observation_t)
         loss = jnp.mean(jnp.square(target_value - predicted_value))
         return loss
 
@@ -71,7 +71,7 @@ class VanillaPPO(BaseAgent):
         )
         normalized_advantage_t = jax.lax.stop_gradient(normalized_advantage_t)
 
-        mu, sigma = self.policy_network.apply(policy_params, batch.observation_t)
+        mu, sigma = self.policy(policy_params, batch.observation_t)
         log_probability_t = rlax.gaussian_diagonal().logprob(batch.action_t, mu, sigma)
         log_ratio = log_probability_t - jnp.squeeze(batch.log_probability_t)
         ratio = jnp.exp(log_ratio)

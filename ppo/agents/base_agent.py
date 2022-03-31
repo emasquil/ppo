@@ -49,8 +49,17 @@ class BaseAgent(Actor):
         self.value_optimizer = optax.adam(self.learning_rate_schedule_value, eps=1e-5)
         self.value_optimizer_state = self.value_optimizer.init(self.value_params)
 
+        def policy_(policy_params: hk.Params, observation: np.ndarray):
+            return self.policy_network.apply(policy_params, observation)
+
+        def value_(value_params, observation):
+            return self.value_network.apply(value_params, observation)
+
+        self.policy = jax.jit(policy_)
+        self.value = jax.jit(value_)
+
         def sampling_policy(policy_params: hk.Params, key: chex.PRNGKey, observation: np.ndarray):
-            mu, sigma = self.policy_network.apply(policy_params, observation)
+            mu, sigma = self.policy(policy_params, observation)
 
             action = rlax.gaussian_diagonal().sample(key, mu, sigma)
             log_prob = rlax.gaussian_diagonal().logprob(action, mu, sigma)
@@ -59,12 +68,6 @@ class BaseAgent(Actor):
 
         self.sampling_policy = sampling_policy
         self.sampling_key = key_sampling_policy
-
-        def policy(policy_params: hk.Params, observation: np.ndarray):
-            return self.policy_network.apply(policy_params, observation)[0]
-
-        self.policy = policy
-
         self.discount = discount
 
     def select_action_and_prob(self, observation: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
@@ -81,13 +84,13 @@ class BaseAgent(Actor):
 
     def get_value(self, observation: np.ndarray) -> np.ndarray:
         observation = tree_util.tree_map(lambda x: jnp.expand_dims(x, axis=0), observation)
-        return self.value_network.apply(self.value_params, observation)
+        return self.value(self.value_params, observation)
 
     def select_action(self, observation: np.ndarray) -> np.ndarray:
         # Convert to get a batch shape
         observation = tree_util.tree_map(lambda x: jnp.expand_dims(x, axis=0), observation)
 
-        action = self.policy(self.policy_params, observation)
+        action = self.policy(self.policy_params, observation)[0]
         # Convert back to single action
         action = tree_util.tree_map(lambda x: jnp.array(x).squeeze(axis=0), action)
         return action
