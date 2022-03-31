@@ -108,13 +108,13 @@ class VanillaPPO(BaseAgent):
 
         return value_loss, policy_loss, kl_approximation
 
-    def get_last_value_and_done(self, episode):
+    def get_last_value(self, episode):
         """Returns the value of the last timestep and if it was a done or not"""
-        return self.replay_buffer.last_value_and_done
+        return self.replay_buffer.last_value
 
     def add_last_value(self, last_timestep):
         """Add last value for the trajectory"""
-        self.replay_buffer.last_value_and_done = (self.get_value(last_timestep.observation), last_timestep.last())
+        self.replay_buffer.last_value = self.get_value(last_timestep.observation)
 
     def get_full_memory(self) -> list:
         return self.replay_buffer._memory

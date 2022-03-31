@@ -13,7 +13,7 @@ class FixedReplayBuffer(BaseReplayBuffer):
     def __init__(self, key_replay_buffer) -> None:
         super(FixedReplayBuffer, self).__init__(key_replay_buffer)
         self.timestep = None
-        self.last_value_and_done = (None, None)
+        self.last_value = None
 
     def add_first(self, timestep: dm_env.TimeStep) -> None:
         # Create a new trajectory for the new episode

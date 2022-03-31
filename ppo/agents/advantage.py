@@ -1,7 +1,7 @@
 import jax.numpy as jnp
 
 
-def general_advantage_estimation(trajectory, last_value, last_done, discount, gae_lambda):
+def general_advantage_estimation(trajectory, last_value, discount, gae_lambda):
     """Estimate advantage function
 
     Args:
@@ -17,11 +17,10 @@ def general_advantage_estimation(trajectory, last_value, last_done, discount, ga
     advantages = jnp.zeros(len(trajectory))
     lastgaelam = 0.0
     for t in reversed(range(len(trajectory))):
+        not_done_tp1 = 1.0 - trajectory[t].done_tp1
         if t == len(trajectory) - 1:
-            not_done_tp1 = 1.0 - last_done
             value_tp1 = last_value
         else:
-            not_done_tp1 = 1.0 - trajectory[t].done_tp1
             value_tp1 = trajectory[t + 1].value_t
         delta = trajectory[t].reward_tp1 + discount * value_tp1 * not_done_tp1 - trajectory[t].value_t
         advantages = advantages.at[t].set((delta + discount * gae_lambda * not_done_tp1 * lastgaelam)[0])
