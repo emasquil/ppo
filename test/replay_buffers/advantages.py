@@ -61,3 +61,4 @@ if __name__ == "__main__":
         replay_buffer.values_t, replay_buffer.dones_tp1, replay_buffer.rewards_tp1, discount=1, gae_lambda=0.5
     )
     assert jnp.allclose(gae, replay_buffer.correct_gae())
+    print("Test completed")

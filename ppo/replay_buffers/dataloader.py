@@ -7,6 +7,7 @@ import jax
 
 
 from ppo.replay_buffers import FixedReplayBuffer
+from time import time
 
 
 class DataLoader:
@@ -14,7 +15,7 @@ class DataLoader:
         self.replay_buffer = replay_buffer
         self.batch_size = batch_size
 
-        self.indexes = np.arange(0, len(self.replay_buffer))
+        self.indexes = np.arange(0, len(self.replay_buffer.dones_tp1))
         self._key_dataloader = key_dataloader
 
     def __len__(self) -> int:
@@ -27,18 +28,18 @@ class DataLoader:
 
         start = idx * self.batch_size
         end = min((idx + 1) * self.batch_size, len(self.replay_buffer))
-        idxs = jnp.array(self.indexes[start:end])
+        idxs = self.indexes[start:end]
 
         transitions = {
-            "observation_t": jnp.take(self.replay_buffer.obs_t, idxs, axis=0),
-            "advantage_t": jnp.expand_dims(jnp.take(self.replay_buffer.advantages_t, idxs, axis=0), 1),
-            "action_t": jnp.take(self.replay_buffer.actions_t, idxs, axis=0),
-            "log_probability_t": jnp.take(self.replay_buffer.logprobs_t, idxs, axis=0),
-            "value_t": jnp.take(self.replay_buffer.values_t, idxs, axis=0),
+            "observation_t": jnp.array(self.replay_buffer.obs_t[idxs]),
+            "advantage_t": jnp.expand_dims(jnp.array(self.replay_buffer.advantages_t[idxs]), 1),
+            "action_t": jnp.array(self.replay_buffer.actions_t[idxs]),
+            "log_probability_t": jnp.array(self.replay_buffer.logprobs_t[idxs]),
+            "value_t": jnp.array(self.replay_buffer.values_t[idxs]),
         }
 
         return transitions
 
     def shuffle(self) -> None:
         self._key_dataloader, rng = jax.random.split(self._key_dataloader)
-        self.indexes = np.array(jax.random.shuffle(rng, self.indexes))
+        self.indexes = np.array(jax.random.permutation(rng, self.indexes, independent=True))

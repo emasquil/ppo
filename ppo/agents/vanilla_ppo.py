@@ -34,7 +34,6 @@ class VanillaPPO(BaseAgent):
         discount: float,
         clipping_ratio_threshold: float,
         max_grad_norm: float,
-        buffer_size: float,
     ):
         super().__init__(
             environment_spec,
@@ -45,7 +44,7 @@ class VanillaPPO(BaseAgent):
             learning_rate_params,
             discount,
         )
-        self.replay_buffer = FixedReplayBuffer(key_replay_buffer, buffer_size, environment_spec)
+        self.replay_buffer = FixedReplayBuffer(key_replay_buffer)
         self.clipping_ratio_threshold = clipping_ratio_threshold
         self.max_grad_norm = max_grad_norm
         self.value_and_grad_value_loss = jax.jit(jax.value_and_grad(self.value_loss))
@@ -118,5 +117,5 @@ class VanillaPPO(BaseAgent):
     def clear_memory(self):
         self.replay_buffer.clear_memory()
 
-    def cast_to_jax(self):
-        self.replay_buffer.cast_to_jax()
+    def cast_to_numpy(self):
+        self.replay_buffer.cast_to_numpy()
