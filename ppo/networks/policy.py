@@ -96,7 +96,6 @@ class PolicyNetFixedSigmaTanh(hk.Module):
         return hk.Reshape(action_shape)(h), self._sigma * jnp.ones(action_dims)
 
 
-
 class PolicyNetComplete(hk.Module):
     def __init__(
         self,
