@@ -7,7 +7,7 @@ This repository provides a clean code of the PPO algorithm using [JAX](https://g
 
 Interested readers can have a look to our [report](./report.pdf) that goes deeper into the details.
 
-Feel free to checkout to:
+## Contents
 * [Environments](#environments)
 * [Agents](#agents)
 * [Tricks](#tricks)
@@ -15,17 +15,16 @@ Feel free to checkout to:
 * [Contributing](#contributing)
 * [Inspirations](#inspirations)
 
+---
 
 ## Environments
-### Continuous
 - [Pendulum-v1](https://www.gymlibrary.ml/pages/environments/classic_control/pendulum).
 - [Reacher-v2](https://www.gymlibrary.ml/pages/environments/mujoco/reacher).
 - [InvertedPendulum-v2](https://www.gymlibrary.ml/pages/environments/mujoco/inverted_pendulum)
 
 ## Agents
-### Continous 
-- [random_agent](https://github.com/emasquil/ppo/blob/logger_actions/ppo/agents/random_agent.py): a random agent to test your implementation.
-- [vanilla_ppo](https://github.com/emasquil/ppo/blob/logger_actions/ppo/agents/vanilla_ppo.py): a classic version of PPO.
+- [random_agent](https://github.com/emasquil/ppo/blob/logger_actions/ppo/agents/random_agent.py): a random agent..
+- [vanilla_ppo](https://github.com/emasquil/ppo/blob/logger_actions/ppo/agents/vanilla_ppo.py): our implementation of PPO.
 
 
 ## Tricks
@@ -54,7 +53,7 @@ Feel free to checkout to:
 The training loop is implemented in the [ppo notebook](ppo.ipynb). It contains instances of the agents tuned for each of the environments. We log the training metrics (losses, actions, rewards, etc) to a Tensorboard file, you can monitor it separately or within the notebook. After training is completed, a video of the agent is generated.
 
 ### Fast and easy
-Just click on this colab link and have fun with the code:
+Just click on this 
 [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/emasquil/ppo/blob/main/ppo.ipynb)
 
 ### Run it locally
