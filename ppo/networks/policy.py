@@ -43,7 +43,7 @@ class PolicyNetFixedSigma(hk.Module):
                 hidden_layer_params["bias"],
                 f"policy_layer{idx_hidden_layer}",
             )(h)
-            h = jax.nn.tanh(h)
+            h = jax.nn.relu(h)
 
         h = LinearOrthogonal(
             action_dims, self._last_layer_params["std"], self._last_layer_params["bias"], "policy_last_layer"
