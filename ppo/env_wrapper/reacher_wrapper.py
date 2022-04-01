@@ -29,6 +29,7 @@ class ReacherEnv(dm_env.Environment):
         Returns:
             dm_env.TimeStep
         """
+        self._env.returns[0] = 0.0
         observation = self._env.reset()
         return dm_env.restart(observation)
 
