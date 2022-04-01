@@ -12,6 +12,7 @@ Interested readers can have a look to our [report](./report.pdf) that goes deepe
 * [Agents](#agents)
 * [Tricks](#tricks)
 * [How to run it](#how-to-run-it)
+* [Results](#results)
 * [Contributing](#contributing)
 * [Inspirations](#inspirations)
 
@@ -85,7 +86,7 @@ sudo apt-get install -y xvfb ffmpeg freeglut3-dev libosmesa6-dev patchelf libgle
 
 After all the installs you should be ready to run the notebook locally.
 
-## See our results
+## Results
 In the [results](results) directory you can find some plots, logs, and videos of the agents after being trained on the environments previously mentioned.
 
 
