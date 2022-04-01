@@ -18,8 +18,9 @@ Feel free to checkout to:
 
 ## Environments
 ### Continuous
-- [Pendulum-v1](https://www.gymlibrary.ml/pages/environments/classic_control/pendulum). A show case with details is available [here](https://github.com/emasquil/ppo/blob/main/examples/Pendulum-v1.ipynb).
+- [Pendulum-v1](https://www.gymlibrary.ml/pages/environments/classic_control/pendulum).
 - [Reacher-v2](https://www.gymlibrary.ml/pages/environments/mujoco/reacher).
+- [InvertedPendulum-v2](https://www.gymlibrary.ml/pages/environments/mujoco/inverted_pendulum)
 
 ## Agents
 ### Continous 
@@ -30,24 +31,28 @@ Feel free to checkout to:
 ## Tricks
 ### Networks
 - [x] Separated value and policy networks.
-- [x] The standard deviation of the action comes from one parameter only and is independant of the observation. (for continuous action setting only)
+- [x] The standard deviation of the policy can be predicted by the policy network or fixed to a given value. `softplus` activation for making the std always positive.
 - [x] Orthogonal initialization of the weights and constant initialization for the biases.
-- [x] Activation function are `tanh`.
+- [x] Activation functions are `tanh`.
 
 ### Training
-- [x] Linear annealing of the learning rate.
-- [x] Learning with minibatches.
+- [x] Linear annealing of the learning rates. Different learning rate for the policy and value networks.
+- [x] Learning with minibatches. Normalized advantages at minibatch level.
 
 ### Loss
 - [x] Using Generalized Advantage Estimation (GAE).
 - [x] Clipped ratio  
 - [x] Minimum between ratio x GAE and clipped_ratio x GAE
-- [x] Normalized advantage for the policy loss.
-- [ ] Clipped value loss
-- [ ] Entropy bonus
 - [x] Clipped gradient norm
 
+### Environment wrappers
+- [x] Normalization and clipping of the observation
+- [x] Normalization and clipping of the rewards
+- [x] Action normalization: the agent can predict actions between $[-1, 1]$, and the wrapper scale them back to the environment action range.
+    
 ## How to run it
+The training loop is implemented in the [ppo notebook](ppo.ipynb). It contains instances of the agents tuned for each of the environments. We log the training metrics (losses, actions, rewards, etc) to a Tensorboard file, you can monitor it separately or within the notebook. After training is completed, a video of the agent is generated.
+
 ### Fast and easy
 Just click on this colab link and have fun with the code:
 [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/emasquil/ppo/blob/main/ppo.ipynb)
@@ -79,6 +84,12 @@ Note that you might need to install the following.
 sudo apt-get install -y xvfb ffmpeg freeglut3-dev libosmesa6-dev patchelf libglew-dev
 ```
 
+After all the installs you should be ready to run the notebook locally.
+
+## See our results
+In the [results](results) directory you can find some plots, logs, and videos of the agents after being trained on the environments previously mentioned.
+
+
 ## Contributing
 Before any pull request, please make sure to format your code using the following:
 ```Bash
@@ -91,4 +102,5 @@ black -l 120 ./
 [openai/baselines](https://github.com/openai/baselines/blob/ea25b9e8b234e6ee1bca43083f8f3cf974143998/baselines/ppo2/model.py)\
 [DLR-RM/stable-baselines3](https://github.com/DLR-RM/stable-baselines3/tree/master/stable_baselines3/ppo)\
 [openai/spinningup](https://github.com/openai/spinningup/blob/master/spinup/algos/tf1/ppo/ppo.py)\
-[Costa Huang's blogpost](https://costa.sh/blog-the-32-implementation-details-of-ppo.html)
+[Costa Huang's blogpost](https://costa.sh/blog-the-32-implementation-details-of-ppo.html)\
+[deepmind/acme](https://github.com/deepmind/acme/tree/master/acme/agents/jax/ppo)
