@@ -1,0 +1,78 @@
+environment = ReacherEnv()
+environment_spec = specs.make_environment_spec(environment)
+
+# Training config
+
+num_training_iterations = 50
+timesteps_per_iteration = 2000
+gae_lambda = 0.95
+num_epochs = 10
+batch_size = 32
+learning_rate_params = {
+    "annealing": True,
+    "policy": {
+        "initial_learning_rate":  5e-4,
+        "last_learning_rate": 0,
+    },
+    "value": {
+        "initial_learning_rate": 3e-5,
+        "last_learning_rate": 0,
+    },
+    "annealing_duration": num_training_iterations * np.ceil(timesteps_per_iteration / batch_size) * num_epochs,
+}  # if "annealing" = False then "initial_learning_rate" is taken as the steady value
+clipping_ratio_threshold = 0.2
+max_grad_norm = 0.5
+discount = 0.99
+kl_threshold = None  # if kl_threshold is None we're not using it for early stopping
+# if providing a sigma value, the policy net will only predict the mean and we'll use this fixed value as std
+policy_net_sigma = 0.05
+
+# Network
+policy_hidden_layers = [
+    {"output_size": 64, "std": np.sqrt(2), "bias": 0},
+    {"output_size": 64, "std": np.sqrt(2), "bias": 0},
+]
+policy_last_layer = {"output_size": 64, "std": 0.01, "bias": 0}
+value_hidden_layers = [
+    {"output_size": 64, "std": np.sqrt(2), "bias": 0},
+    {"output_size": 64, "std": np.sqrt(2), "bias": 0},
+]
+value_last_layer = {"output_size": 64, "std": 1, "bias": 0}
+
+# Logs
+log_dir = "runs"
+experiment_name = "reacher"
+logger_freq = 200
+
+
+# Keys
+seed = 0
+key = jax.random.PRNGKey(seed)
+key, key_init_networks = jax.random.split(key)
+key, key_sampling_policy = jax.random.split(key)
+key_dataloader, key_replay_buffer = jax.random.split(key)
+
+
+# Create the agent
+
+def policy_network(observations):
+        return PolicyNetFixedSigmaTanh(
+            policy_hidden_layers, policy_last_layer, environment_spec.actions, "policy", policy_net_sigma
+        )(observations)
+
+def value_network(observations):
+    return ValueNetwork(value_hidden_layers, value_last_layer, "value")(observations)
+
+
+agent = VanillaPPO(
+    environment_spec=environment_spec,
+    policy_network=policy_network,
+    value_network=value_network,
+    key_init_networks=key_init_networks,
+    key_sampling_policy=key_sampling_policy,
+    key_replay_buffer=key_replay_buffer,
+    learning_rate_params=learning_rate_params,
+    discount=discount,
+    clipping_ratio_threshold=clipping_ratio_threshold,
+    max_grad_norm=max_grad_norm,
+)

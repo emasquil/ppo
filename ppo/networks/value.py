@@ -7,7 +7,9 @@ from ppo.networks.linear import LinearOrthogonal
 
 
 class ValueNetwork(hk.Module):
-    def __init__(self, hidden_layers_params: Sequence[dict], last_layer_params: dict, name: Optional[str] = None) -> None:
+    def __init__(
+        self, hidden_layers_params: Sequence[dict], last_layer_params: dict, name: Optional[str] = None
+    ) -> None:
         """
         output_sizes is the output size of each linear layers.
         """
@@ -19,7 +21,14 @@ class ValueNetwork(hk.Module):
         h = x
 
         for idx_hidden_layer, hidden_layer_params in enumerate(self._hidden_layers_params, start=1):
-            h = LinearOrthogonal(hidden_layer_params["output_size"], hidden_layer_params["std"], hidden_layer_params["bias"], f"value_layer{idx_hidden_layer}")(h)
+            h = LinearOrthogonal(
+                hidden_layer_params["output_size"],
+                hidden_layer_params["std"],
+                hidden_layer_params["bias"],
+                f"value_layer{idx_hidden_layer}",
+            )(h)
             h = jax.nn.tanh(h)
 
-        return LinearOrthogonal(1, self._last_layer_params["std"], self._last_layer_params["bias"], "value_last_layer")(h)[..., 0]
+        return LinearOrthogonal(1, self._last_layer_params["std"], self._last_layer_params["bias"], "value_last_layer")(
+            h
+        )[..., 0]
