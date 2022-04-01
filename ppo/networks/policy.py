@@ -43,13 +43,11 @@ class PolicyNetFixedSigma(hk.Module):
                 hidden_layer_params["bias"],
                 f"policy_layer{idx_hidden_layer}",
             )(h)
-            h = jax.nn.relu(h)
+            h = jax.nn.tanh(h)
 
         h = LinearOrthogonal(
             action_dims, self._last_layer_params["std"], self._last_layer_params["bias"], "policy_last_layer"
         )(h)
-
-        h = jax.nn.tanh(h)
 
         return hk.Reshape(action_shape)(h), self._sigma * jnp.ones(action_dims)
 
@@ -90,12 +88,11 @@ class PolicyNetComplete(hk.Module):
                 hidden_layer_params["bias"],
                 f"policy_layer{idx_hidden_layer}",
             )(h)
-            h = jax.nn.relu(h)
+            h = jax.nn.tanh(h)
 
         h = LinearOrthogonal(
             2 * action_dims, self._last_layer_params["std"], self._last_layer_params["bias"], "policy_last_layer"
         )(h)
-        h = jax.nn.tanh(h)
 
         mu, pre_sigma = jnp.split(h, 2, axis=-1)
         sigma = jax.nn.softplus(pre_sigma)
