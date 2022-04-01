@@ -24,8 +24,8 @@ Interested readers can have a look to our [report](./report.pdf) that goes deepe
 - [InvertedPendulum-v2](https://www.gymlibrary.ml/pages/environments/mujoco/inverted_pendulum)
 
 ## Agents
-- [random_agent](https://github.com/emasquil/ppo/blob/logger_actions/ppo/agents/random_agent.py): a random agent..
-- [vanilla_ppo](https://github.com/emasquil/ppo/blob/logger_actions/ppo/agents/vanilla_ppo.py): our implementation of PPO.
+- [random_agent](ppo/agents/random_agent.py): a random agent..
+- [vanilla_ppo](ppo/agents/vanilla_ppo.py): our implementation of PPO.
 
 
 ## Tricks
