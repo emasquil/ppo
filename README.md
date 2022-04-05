@@ -7,24 +7,24 @@ __This repository provides a working and clean code of the PPO algorithm using [
 
 <table style="width:100%; table-layout:fixed;">
 	<tr>
-		<td><img width="250px" src="gifs_and_pngs/inverted_pendulum.gif"></td>
-		<td><img width="250px" src="gifs_and_pngs/inverted_pendulum.png"></td>
+		<td><img src="gifs_and_pngs/inverted_pendulum.gif"></td>
+		<td><img src="gifs_and_pngs/inverted_pendulum.png"></td>
 	</tr>
 	<tr>
 		<td>Our PPO agent trained on inverted pendulum.</td>
 		<td>Average episodic return over the rollouts. More is available by typing "tensorboard --logdir results/inv-pend/".</td>
 	</tr>
 	<tr>
-		<td><img width="250px" src="gifs_and_pngs/reacher.gif"></td>
-		<td><img width="250px" src="gifs_and_pngs/reacher.png"></td>
+		<td><img src="gifs_and_pngs/reacher.gif"></td>
+		<td><img src="gifs_and_pngs/reacher.png"></td>
 	</tr>
 	<tr>
 		<td>Our PPO agent trained on reacher.</td>
 		<td>Average episodic return over the rollouts. More is available by typing "tensorboard --logdir results/reacher/".</td>
 	</tr>
 	<tr>
-		<td><img width="250px" src="gifs_and_pngs/pendulum.gif"></td>
-		<td><img width="250px" src="gifs_and_pngs/pendulum.png"></td>
+		<td><img src="gifs_and_pngs/pendulum.gif"></td>
+		<td><img src="gifs_and_pngs/pendulum.png"></td>
 	</tr>
 	<tr>
 		<td>Our PPO agent trained on pendulum.</td>
