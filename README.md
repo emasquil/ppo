@@ -3,7 +3,34 @@
 <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/emasquil/ppo/blob/main/ppo.ipynb)
 
-This repository provides a clean code of the PPO algorithm using [JAX](https://github.com/google/jax) and [Haiku](https://github.com/deepmind/dm-haiku).
+__This repository provides a working and clean code of the PPO algorithm using [JAX](https://github.com/google/jax) and [Haiku](https://github.com/deepmind/dm-haiku). To see it working, you can simply click on the Colab link above!__
+
+<table style="width:100%; table-layout:fixed;">
+	<tr>
+		<td><img width="250px" src="gifs_and_pngs/inverted_pendulum.gif"></td>
+		<td><img width="250px" src="gifs_and_pngs/inverted_pendulum.png"></td>
+	</tr>
+	<tr>
+		<td>Our PPO agent trained on inverted pendulum.</td>
+		<td>Average episodic return over the rollouts. More is available by typing "tensorboard --logdir results/inv-pend/".</td>
+	</tr>
+	<tr>
+		<td><img width="250px" src="gifs_and_pngs/reacher.gif"></td>
+		<td><img width="250px" src="gifs_and_pngs/reacher.png"></td>
+	</tr>
+	<tr>
+		<td>Our PPO agent trained on reacher.</td>
+		<td>Average episodic return over the rollouts. More is available by typing "tensorboard --logdir results/reacher/".</td>
+	</tr>
+	<tr>
+		<td><img width="250px" src="gifs_and_pngs/pendulum.gif"></td>
+		<td><img width="250px" src="gifs_and_pngs/pendulum.png"></td>
+	</tr>
+	<tr>
+		<td>Our PPO agent trained on pendulum.</td>
+		<td>Average episodic return over the rollouts. More is available by typing "tensorboard --logdir results/pendulum/".</td>
+	</tr>
+</table>
 
 Interested readers can have a look to our [report](./report.pdf) that goes deeper into the details.
 
@@ -19,9 +46,9 @@ Interested readers can have a look to our [report](./report.pdf) that goes deepe
 ---
 
 ## Environments
-- [Pendulum-v1](https://www.gymlibrary.ml/pages/environments/classic_control/pendulum).
-- [Reacher-v2](https://www.gymlibrary.ml/pages/environments/mujoco/reacher).
 - [InvertedPendulum-v2](https://www.gymlibrary.ml/pages/environments/mujoco/inverted_pendulum)
+- [Reacher-v2](https://www.gymlibrary.ml/pages/environments/mujoco/reacher).
+- [Pendulum-v1](https://www.gymlibrary.ml/pages/environments/classic_control/pendulum).
 
 ## Agents
 - [random_agent](ppo/agents/random_agent.py): a random agent..
